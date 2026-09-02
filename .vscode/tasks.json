@@ -4,7 +4,8 @@
     {
       "label": "Build Baremetal (Ninja)",
       "type": "shell",
-      "command": "cmake --preset baremetal-debug && cmake --build --preset baremetal-debug",
+      "command": "${workspaceFolder}\\build\\build.bat",
+      "args": ["baremetal-debug"],
       "group": {
         "kind": "build",
         "isDefault": true
@@ -14,23 +15,25 @@
     {
       "label": "Build RT-Thread (Ninja)",
       "type": "shell",
-      "command": "cmake --preset rtt-debug && cmake --build --preset rtt-debug",
+      "command": "${workspaceFolder}\\build\\build.bat",
+      "args": ["rtt-debug"],
       "group": "build",
       "problemMatcher": "$gcc"
     },
     {
       "label": "Build FreeRTOS (Ninja)",
       "type": "shell",
-      "command": "cmake --preset freertos-debug && cmake --build --preset freertos-debug",
+      "command": "${workspaceFolder}\\build\\build.bat",
+      "args": ["freertos-debug"],
       "group": "build",
       "problemMatcher": "$gcc"
     },
     {
-      "label": "Build via Make",
+      "label": "Clean All Builds",
       "type": "shell",
-      "command": "make -j4",
-      "group": "build",
-      "problemMatcher": "$gcc"
+      "command": "${workspaceFolder}\\build\\clean.bat",
+      "args": ["all"],
+      "problemMatcher": []
     },
     {
       "label": "Kconfig Menuconfig",

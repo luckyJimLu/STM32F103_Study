@@ -17,6 +17,7 @@ STM32F103_Study/
 ├── CMakeLists.txt               # 顶级 CMake 构建入口 (自动联动 .config)
 ├── CMakePresets.json            # CMake 预设 (Ninja 快速编译)
 ├── .vscode/                     # VS Code 开发与一键编译/调试配置
+├── build/                       # 构建/清除脚本、生成配置与 build/out 编译产物
 ├── cmake/                       # CMake 构建模块与工具链
 ├── tools/                       # 🛠️ 本地编译工具链与环境工具 (arm-none-eabi-gcc / openocd / ninja)
 ├── third_party/                 # 📦 常用第三方开源仓 (cJSON / LwIP / SEGGER RTT / EasyLogger / Letter Shell)
@@ -28,6 +29,7 @@ STM32F103_Study/
 ├── scripts/                     # 脚本工具 (menuconfig, flash)
 └── docs/                        # 📚 知识库与实战文档
     ├── SOP_development_standard_procedure.md # 🚀 嵌入式开发标准作业程序 (SOP)
+    ├── board_resources/         # 正点原子精英板资料、模块摘要与引脚速查
     ├── hardware/                # 硬件原理图与最小系统设计指南
     ├── porting_guides/          # 移植与环境搭建手册
     │   ├── 01_cmake_ninja_setup.md
@@ -59,15 +61,24 @@ python scripts/menuconfig.py --gui
 make guiconfig
 ```
 
-### 3. 编译项目 (CMake + Ninja 或 Make)
-```bash
-# CMake + Ninja 模式
-cmake -B build -G Ninja
-cmake --build build
+### 3. 编译项目（Windows 免安装工具链）
+```bat
+REM 默认编译裸机 Debug 版本
+build\build.bat
 
-# GNU Make 模式
-make -j4
+REM 也可编译指定预设或全部预设
+build\build.bat baremetal-release
+build\build.bat rtt-debug
+build\build.bat freertos-debug
+build\build.bat all
+
+REM 清除全部产物，或只清除一个预设
+build\clean.bat
+build\clean.bat baremetal-debug
 ```
+
+脚本只使用 `tools/` 内的 CMake、Ninja 和 GNU Arm Toolchain，不要求在 Windows
+中安装这些工具或配置系统 `PATH`。固件输出到 `build/out/<preset>/`。
 
 ### 4. 一键烧录
 ```bash
@@ -80,6 +91,7 @@ make flash
 
 ## 📚 知识库导航
 - **[🚀 模块化嵌入式开发标准作业程序 (SOP)](docs/SOP_development_standard_procedure.md)**
+- [正点原子精英 STM32F103 开发板资料](docs/board_resources/README.md)
 - [硬件原理图设计与最小系统指南](docs/hardware/schematics_guide.md)
 - [01 - CMake + Ninja 编译环境搭建实战](docs/porting_guides/01_cmake_ninja_setup.md)
 - [02 - RT-Thread Nano 移植手册与实战](docs/porting_guides/02_rt_thread_nano_porting.md)

@@ -17,6 +17,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/build/generated)
 # Define Main Target Executable
 set(TARGET_ELF ${PROJECT_NAME}.elf)
 add_executable(${TARGET_ELF} ${STARTUP_ASM})
+set_target_properties(${TARGET_ELF} PROPERTIES LINKER_LANGUAGE C)
 
 # Set Linker flags for target
 target_link_options(${TARGET_ELF} PRIVATE

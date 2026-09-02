@@ -4,7 +4,7 @@
     {
       "name": "Cortex-Debug (OpenOCD ST-Link)",
       "cwd": "${workspaceFolder}",
-      "executable": "${workspaceFolder}/build/baremetal-debug/STM32F103_Study.elf",
+      "executable": "${workspaceFolder}/build/out/baremetal-debug/STM32F103_Study.elf",
       "request": "launch",
       "type": "cortex-debug",
       "servertype": "openocd",

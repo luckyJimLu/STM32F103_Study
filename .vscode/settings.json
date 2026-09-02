@@ -1,4 +1,5 @@
 {
+  "cmake.cmakePath": "${workspaceFolder}/tools/cmake/bin/cmake.exe",
   "cmake.configureOnOpen": true,
   "cmake.generator": "Ninja",
   "files.associations": {

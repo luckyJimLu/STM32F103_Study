@@ -5,25 +5,34 @@
 set(CMAKE_SYSTEM_NAME               Generic)
 set(CMAKE_SYSTEM_PROCESSOR          arm)
 
-# Check if local toolchain exists in tools/toolchain/bin
-set(LOCAL_TOOLCHAIN_DIR "${CMAKE_CURRENT_LIST_DIR}/../tools/toolchain/bin")
-if(EXISTS "${LOCAL_TOOLCHAIN_DIR}")
-    set(TOOLCHAIN_PATH_HINT "${LOCAL_TOOLCHAIN_DIR}/")
-    message(STATUS ">> [Toolchain] Using local tools/toolchain/bin toolchain")
+# Use the repository-local toolchain so no system installation or PATH change is needed.
+get_filename_component(LOCAL_TOOLCHAIN_DIR
+    "${CMAKE_CURRENT_LIST_DIR}/../tools/toolchain/bin" ABSOLUTE)
+
+if(WIN32)
+    set(TOOLCHAIN_EXECUTABLE_SUFFIX ".exe")
 else()
-    set(TOOLCHAIN_PATH_HINT "")
+    set(TOOLCHAIN_EXECUTABLE_SUFFIX "")
 endif()
 
-# Toolchain executables
-set(TOOLCHAIN_PREFIX                arm-none-eabi-)
+set(TOOLCHAIN_PREFIX "${LOCAL_TOOLCHAIN_DIR}/arm-none-eabi-")
+set(TOOLCHAIN_GCC "${TOOLCHAIN_PREFIX}gcc${TOOLCHAIN_EXECUTABLE_SUFFIX}")
 
-find_program(CMAKE_C_COMPILER       ${TOOLCHAIN_PATH_HINT}${TOOLCHAIN_PREFIX}gcc)
-find_program(CMAKE_CXX_COMPILER     ${TOOLCHAIN_PATH_HINT}${TOOLCHAIN_PREFIX}g++)
-find_program(CMAKE_ASM_COMPILER     ${TOOLCHAIN_PATH_HINT}${TOOLCHAIN_PREFIX}gcc)
-find_program(CMAKE_AR               ${TOOLCHAIN_PATH_HINT}${TOOLCHAIN_PREFIX}ar)
-find_program(CMAKE_OBJCOPY          ${TOOLCHAIN_PATH_HINT}${TOOLCHAIN_PREFIX}objcopy)
-find_program(CMAKE_OBJDUMP          ${TOOLCHAIN_PATH_HINT}${TOOLCHAIN_PREFIX}objdump)
-find_program(CMAKE_SIZE             ${TOOLCHAIN_PATH_HINT}${TOOLCHAIN_PREFIX}size)
+if(NOT EXISTS "${TOOLCHAIN_GCC}")
+    message(FATAL_ERROR
+        "GNU Arm toolchain not found at: ${TOOLCHAIN_GCC}\n"
+        "Extract it so tools/toolchain/bin/arm-none-eabi-gcc exists.")
+endif()
+
+message(STATUS ">> [Toolchain] Using repository-local tools/toolchain/bin")
+
+set(CMAKE_C_COMPILER   "${TOOLCHAIN_PREFIX}gcc${TOOLCHAIN_EXECUTABLE_SUFFIX}" CACHE FILEPATH "C compiler")
+set(CMAKE_CXX_COMPILER "${TOOLCHAIN_PREFIX}g++${TOOLCHAIN_EXECUTABLE_SUFFIX}" CACHE FILEPATH "C++ compiler")
+set(CMAKE_ASM_COMPILER "${TOOLCHAIN_PREFIX}gcc${TOOLCHAIN_EXECUTABLE_SUFFIX}" CACHE FILEPATH "ASM compiler")
+set(CMAKE_AR           "${TOOLCHAIN_PREFIX}ar${TOOLCHAIN_EXECUTABLE_SUFFIX}" CACHE FILEPATH "Archiver")
+set(CMAKE_OBJCOPY      "${TOOLCHAIN_PREFIX}objcopy${TOOLCHAIN_EXECUTABLE_SUFFIX}" CACHE FILEPATH "Objcopy")
+set(CMAKE_OBJDUMP      "${TOOLCHAIN_PREFIX}objdump${TOOLCHAIN_EXECUTABLE_SUFFIX}" CACHE FILEPATH "Objdump")
+set(CMAKE_SIZE         "${TOOLCHAIN_PREFIX}size${TOOLCHAIN_EXECUTABLE_SUFFIX}" CACHE FILEPATH "Size tool")
 
 set(CMAKE_TRY_COMPILE_TARGET_TYPE   STATIC_LIBRARY)
 

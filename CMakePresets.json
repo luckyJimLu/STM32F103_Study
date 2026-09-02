@@ -5,8 +5,11 @@
       "name": "base",
       "hidden": true,
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/${presetName}",
-      "toolchainFile": "${sourceDir}/cmake/arm-none-eabi-gcc.cmake"
+      "binaryDir": "${sourceDir}/build/out/${presetName}",
+      "toolchainFile": "${sourceDir}/cmake/arm-none-eabi-gcc.cmake",
+      "cacheVariables": {
+        "CMAKE_MAKE_PROGRAM": "${sourceDir}/tools/ninja/ninja.exe"
+      }
     },
     {
       "name": "baremetal-debug",
@@ -57,6 +60,10 @@
     {
       "name": "baremetal-debug",
       "configurePreset": "baremetal-debug"
+    },
+    {
+      "name": "baremetal-release",
+      "configurePreset": "baremetal-release"
     },
     {
       "name": "rtt-debug",

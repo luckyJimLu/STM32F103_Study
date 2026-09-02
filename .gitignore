@@ -1,5 +1,9 @@
-# Build directories
-build/
+# Build outputs (keep the build entry scripts under version control)
+build/*
+!build/_env.bat
+!build/build.bat
+!build/clean.bat
+!build/README.md
 cmake-build-*/
 .cache/
 
@@ -28,3 +32,8 @@ cmake-build-*/
 # OS artifacts
 Thumbs.db
 .DS_Store
+
+# Large reference documents (keep locally only)
+docs/ref_docs/
+doc/ref_docs/
+*.pdf
