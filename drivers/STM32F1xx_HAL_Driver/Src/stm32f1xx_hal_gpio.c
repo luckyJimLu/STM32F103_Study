@@ -32,16 +32,26 @@ void HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *GPIO_Init)
         }
         else if (GPIO_Init->Mode == GPIO_MODE_INPUT)
         {
-          GPIOx->CRL |= (0x08U << (pinpos * 4U)); /* Input with pull-up/pull-down */
-          if (GPIO_Init->Pull == 1)
+          if (GPIO_Init->Pull == GPIO_NOPULL)
           {
-            GPIOx->ODR |= (1U << pinpos);
+            /* Floating input: CNF=01, MODE=00 */
+            GPIOx->CRL |= (0x04U << (pinpos * 4U));
           }
           else
           {
-            GPIOx->ODR &= ~(1U << pinpos);
+            /* Input with pull-up/pull-down: CNF=10, MODE=00 */
+            GPIOx->CRL |= (0x08U << (pinpos * 4U));
+            if (GPIO_Init->Pull == GPIO_PULLUP)
+            {
+              GPIOx->ODR |= (1U << pinpos);  /* Pull-up: ODR=1 */
+            }
+            else
+            {
+              GPIOx->ODR &= ~(1U << pinpos); /* Pull-down: ODR=0 */
+            }
           }
         }
+
       }
       else
       {
@@ -58,16 +68,26 @@ void HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *GPIO_Init)
         }
         else if (GPIO_Init->Mode == GPIO_MODE_INPUT)
         {
-          GPIOx->CRH |= (0x08U << shift);
-          if (GPIO_Init->Pull == 1)
+          if (GPIO_Init->Pull == GPIO_NOPULL)
           {
-            GPIOx->ODR |= (1U << pinpos);
+            /* Floating input: CNF=01, MODE=00 */
+            GPIOx->CRH |= (0x04U << shift);
           }
           else
           {
-            GPIOx->ODR &= ~(1U << pinpos);
+            /* Input with pull-up/pull-down: CNF=10, MODE=00 */
+            GPIOx->CRH |= (0x08U << shift);
+            if (GPIO_Init->Pull == GPIO_PULLUP)
+            {
+              GPIOx->ODR |= (1U << pinpos);  /* Pull-up: ODR=1 */
+            }
+            else
+            {
+              GPIOx->ODR &= ~(1U << pinpos); /* Pull-down: ODR=0 */
+            }
           }
         }
+
       }
     }
   }

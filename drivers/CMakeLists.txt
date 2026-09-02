@@ -8,8 +8,8 @@ target_include_directories(drivers_lib PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/CMSIS/Core/Include
     ${CMAKE_CURRENT_SOURCE_DIR}/CMSIS/Device/ST/STM32F1xx/Include
     ${CMAKE_CURRENT_SOURCE_DIR}/STM32F1xx_HAL_Driver/Inc
-    ${CMAKE_CURRENT_SOURCE_DIR}/STM32F1xx_HAL_Driver/Inc/Legacy
 )
+
 
 # Collect HAL Driver Sources
 file(GLOB_RECURSE HAL_SOURCES

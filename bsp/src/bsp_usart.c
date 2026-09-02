@@ -18,22 +18,22 @@ void BSP_USART1_Init(uint32_t baudrate)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   GPIO_InitStruct.Pin = GPIO_PIN_9;
   GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Speed = 0x03;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /* Configure PA10 (RX) as Input Floating */
   GPIO_InitStruct.Pin = GPIO_PIN_10;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = 0;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  Uart1Handle.Instance = USART1;
-  Uart1Handle.Init.BaudRate = baudrate;
-  Uart1Handle.Init.WordLength = 8;
-  Uart1Handle.Init.StopBits = 1;
-  Uart1Handle.Init.Parity = 0;
-  Uart1Handle.Init.Mode = 3;
-  Uart1Handle.Init.HwFlowCtl = 0;
+  Uart1Handle.Instance        = USART1;
+  Uart1Handle.Init.BaudRate   = baudrate;
+  Uart1Handle.Init.WordLength = UART_WORDLENGTH_8B;
+  Uart1Handle.Init.StopBits   = UART_STOPBITS_1;
+  Uart1Handle.Init.Parity     = UART_PARITY_NONE;
+  Uart1Handle.Init.Mode       = UART_MODE_TX_RX;
+  Uart1Handle.Init.HwFlowCtl  = UART_HWCONTROL_NONE;
 
   HAL_UART_Init(&Uart1Handle);
 }

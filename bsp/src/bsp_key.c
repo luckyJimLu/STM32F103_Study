@@ -14,7 +14,7 @@ void BSP_KEY_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   GPIO_InitStruct.Pin = KEY0_PIN;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = 0; /* Pull-down or external */
+  GPIO_InitStruct.Pull = GPIO_NOPULL; /* External pull-down on board */
   HAL_GPIO_Init(KEY0_GPIO_PORT, &GPIO_InitStruct);
 }
 

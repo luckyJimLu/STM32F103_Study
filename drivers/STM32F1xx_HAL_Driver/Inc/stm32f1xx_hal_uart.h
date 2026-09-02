@@ -14,6 +14,31 @@
 
 #include "stm32f1xx_hal_def.h"
 
+/* UART Word Length */
+#define UART_WORDLENGTH_8B          0x00000000U
+#define UART_WORDLENGTH_9B          0x00001000U
+
+/* UART Stop Bits */
+#define UART_STOPBITS_1             0x00000000U
+#define UART_STOPBITS_2             0x00002000U
+
+/* UART Parity */
+#define UART_PARITY_NONE            0x00000000U
+#define UART_PARITY_EVEN            0x00000400U
+#define UART_PARITY_ODD             0x00000600U
+
+/* UART Transfer Mode */
+#define UART_MODE_RX                0x00000004U
+#define UART_MODE_TX                0x00000008U
+#define UART_MODE_TX_RX             0x0000000CU
+
+/* UART Hardware Flow Control */
+#define UART_HWCONTROL_NONE         0x00000000U
+#define UART_HWCONTROL_RTS          0x00000100U
+#define UART_HWCONTROL_CTS          0x00000200U
+#define UART_HWCONTROL_RTS_CTS      0x00000300U
+
+
 typedef struct
 {
   uint32_t BaudRate;

@@ -53,4 +53,5 @@ typedef enum
 }
 #endif
 
-#endif /* ___STM32F1xx_HAL_DEF */
+#endif /* __STM32F1xx_HAL_DEF */
+

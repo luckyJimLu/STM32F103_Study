@@ -48,6 +48,16 @@ typedef enum
   GPIO_MODE_ANALOG = 0x00000003u
 } GPIO_Mode;
 
+/* GPIO Pull-up/Pull-down */
+#define  GPIO_NOPULL        0x00000000u
+#define  GPIO_PULLUP        0x00000001u
+#define  GPIO_PULLDOWN      0x00000002u
+
+/* GPIO Output Maximum frequency */
+#define  GPIO_SPEED_FREQ_LOW        0x00000001u  /* 2MHz  */
+#define  GPIO_SPEED_FREQ_MEDIUM     0x00000002u  /* 10MHz */
+#define  GPIO_SPEED_FREQ_HIGH       0x00000003u  /* 50MHz */
+
 typedef struct
 {
   uint32_t Pin;

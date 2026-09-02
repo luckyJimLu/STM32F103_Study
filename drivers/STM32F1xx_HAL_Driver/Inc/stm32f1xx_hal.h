@@ -15,6 +15,8 @@
 
 #include "stm32f1xx_hal_conf.h"
 
+#define HAL_MAX_DELAY      0xFFFFFFFFU
+
 extern volatile uint32_t uwTick;
 
 HAL_StatusTypeDef HAL_Init(void);
@@ -32,3 +34,4 @@ void HAL_ResumeTick(void);
 #endif
 
 #endif /* __STM32F1xx_HAL_H */
+

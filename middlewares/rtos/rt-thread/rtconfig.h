@@ -12,7 +12,7 @@
 #define RT_USING_HOOK
 #define RT_USING_IDLE_HOOK
 #define RT_IDLE_HOOK_LIST_SIZE 4
-#define RT_IDEL_HOOK_LIST_SIZE 4
+
 
 /* Inter-Thread communication */
 #define RT_USING_SEMAPHORE

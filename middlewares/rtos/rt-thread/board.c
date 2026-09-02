@@ -26,12 +26,19 @@ void rt_hw_board_init(void)
   #endif
 }
 
-void SysTick_Handler_RTT(void)
+void SysTick_Handler(void)
 {
+#if defined(RT_USING_NANO)
+  /* RT-Thread Nano tick processing */
   /* rt_interrupt_enter(); */
   /* rt_tick_increase();   */
   /* rt_interrupt_leave(); */
+#else
+  /* Bare-metal / HAL tick */
+  HAL_IncTick();
+#endif
 }
+
 
 void rt_hw_console_output(const char *str)
 {

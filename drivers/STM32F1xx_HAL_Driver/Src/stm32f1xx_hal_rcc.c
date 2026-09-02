@@ -9,30 +9,60 @@
 
 void SystemClock_Config(void)
 {
-  /* Basic 72MHz System Clock Configuration using 8MHz HSE */
+  uint32_t timeout;
+
   /* HSE ON */
   RCC->CR |= (1U << 16);
-  while (!(RCC->CR & (1U << 17)));
 
-  /* FLASH Latency: 2 wait states */
+  /* Wait for HSE ready with timeout (~500ms at 8MHz HSI) */
+  timeout = 5000000U;
+  while (!(RCC->CR & (1U << 17)))
+  {
+    if (--timeout == 0U)
+    {
+      /* HSE startup failed – fall back to HSI at 8MHz */
+      return;
+    }
+  }
+
+  /* FLASH Latency: 2 wait states for 72MHz */
   *((volatile uint32_t *)(0x40022000)) = 0x12;
 
-  /* PLL: HSE * 9 = 72MHz */
-  RCC->CFGR &= ~((0x0F << 18) | (1U << 16));
-  RCC->CFGR |= (0x07 << 18) | (1U << 16);
+  /* PLL: HSE as source, multiply by 9 → 72MHz */
+  RCC->CFGR &= ~((0x0FU << 18) | (1U << 16));
+  RCC->CFGR |=  ((0x07U << 18) | (1U << 16));  /* PLLMUL=9, PLLSRC=HSE */
+
+  /* AHB Prescaler /1, APB1 /2, APB2 /1 */
+  RCC->CFGR &= ~((0x0FU << 4) | (0x07U << 8) | (0x07U << 11));
+  RCC->CFGR |=  (0x04U << 8);  /* PPRE1 = /2 (APB1 max 36MHz) */
 
   /* Enable PLL */
   RCC->CR |= (1U << 24);
-  while (!(RCC->CR & (1U << 25)));
 
-  /* AHB Prescaler /1, APB1 /2, APB2 /1 */
-  RCC->CFGR &= ~((0x0F << 4) | (0x07 << 8) | (0x07 << 11));
-  RCC->CFGR |= (0x04 << 8);
+  /* Wait for PLL ready with timeout */
+  timeout = 5000000U;
+  while (!(RCC->CR & (1U << 25)))
+  {
+    if (--timeout == 0U)
+    {
+      return;
+    }
+  }
 
   /* Select PLL as SYSCLK */
-  RCC->CFGR &= ~(0x03);
-  RCC->CFGR |= 0x02;
-  while ((RCC->CFGR & (0x0C)) != 0x08);
+  RCC->CFGR &= ~(0x03U);
+  RCC->CFGR |=  0x02U;
+
+  /* Wait until PLL is used as system clock */
+  timeout = 5000000U;
+  while ((RCC->CFGR & 0x0CU) != 0x08U)
+  {
+    if (--timeout == 0U)
+    {
+      return;
+    }
+  }
 
   SystemCoreClockUpdate();
 }
+

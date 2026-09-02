@@ -75,10 +75,10 @@ def main():
 
     if gui_mode:
         import guiconfig
-        guiconfig._menuconfig(kconf)
+        guiconfig.menuconfig(kconf)
     else:
         import menuconfig
-        menuconfig._menuconfig(kconf)
+        menuconfig.menuconfig(kconf)
 
     # Write .config
     kconf.write_config(DOTCONFIG_PATH)

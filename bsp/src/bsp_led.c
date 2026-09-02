@@ -15,7 +15,7 @@ void BSP_LED_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   GPIO_InitStruct.Pin = LED0_PIN;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Speed = 0x03; /* 50MHz */
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(LED0_GPIO_PORT, &GPIO_InitStruct);
 
   /* Default Off (Active Low on most bluepill boards) */

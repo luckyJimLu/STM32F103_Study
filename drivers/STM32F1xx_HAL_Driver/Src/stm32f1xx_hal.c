@@ -8,6 +8,7 @@
 #include "stm32f1xx_hal.h"
 
 volatile uint32_t uwTick = 0U;
+static volatile uint32_t uwTickSuspended = 0U;
 
 __attribute__((weak)) void HAL_MspInit(void)
 {
@@ -36,7 +37,10 @@ HAL_StatusTypeDef HAL_DeInit(void)
 
 void HAL_IncTick(void)
 {
-  uwTick += 1U;
+  if (uwTickSuspended == 0U)
+  {
+    uwTick += 1U;
+  }
 }
 
 uint32_t HAL_GetTick(void)
@@ -49,7 +53,8 @@ void HAL_Delay(uint32_t Delay)
   uint32_t tickstart = HAL_GetTick();
   uint32_t wait = Delay;
 
-  if (wait < 0xFFFFFFFFU)
+  /* Add a period to guarantee minimum wait */
+  if (wait < HAL_MAX_DELAY)
   {
     wait += 1U;
   }
@@ -59,7 +64,18 @@ void HAL_Delay(uint32_t Delay)
   }
 }
 
+void HAL_SuspendTick(void)
+{
+  uwTickSuspended = 1U;
+}
+
+void HAL_ResumeTick(void)
+{
+  uwTickSuspended = 0U;
+}
+
 void SysTick_Handler(void)
 {
   HAL_IncTick();
 }
+
