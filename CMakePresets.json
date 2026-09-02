@@ -1,0 +1,70 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "toolchainFile": "${sourceDir}/cmake/arm-none-eabi-gcc.cmake"
+    },
+    {
+      "name": "baremetal-debug",
+      "displayName": "STM32F103 Bare-metal Debug",
+      "description": "Build bare-metal project with debug symbols",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CHIP_TYPE": "STM32F103xB",
+        "USE_RTOS": "NONE"
+      }
+    },
+    {
+      "name": "baremetal-release",
+      "displayName": "STM32F103 Bare-metal Release",
+      "description": "Build bare-metal project optimized for size",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CHIP_TYPE": "STM32F103xB",
+        "USE_RTOS": "NONE"
+      }
+    },
+    {
+      "name": "rtt-debug",
+      "displayName": "STM32F103 RT-Thread Nano Debug",
+      "description": "Build with RT-Thread Nano kernel enabled",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CHIP_TYPE": "STM32F103xB",
+        "USE_RTOS": "RTTHREAD"
+      }
+    },
+    {
+      "name": "freertos-debug",
+      "displayName": "STM32F103 FreeRTOS Debug",
+      "description": "Build with FreeRTOS kernel enabled",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CHIP_TYPE": "STM32F103xB",
+        "USE_RTOS": "FREERTOS"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "baremetal-debug",
+      "configurePreset": "baremetal-debug"
+    },
+    {
+      "name": "rtt-debug",
+      "configurePreset": "rtt-debug"
+    },
+    {
+      "name": "freertos-debug",
+      "configurePreset": "freertos-debug"
+    }
+  ]
+}

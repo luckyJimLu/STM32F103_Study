@@ -1,0 +1,29 @@
+menu "FreeRTOS Kernel Settings"
+    depends on RTOS_FREERTOS
+
+config FREERTOS_TICK_RATE_HZ
+    int "Tick Rate (Hz)"
+    default 1000
+
+config FREERTOS_MAX_PRIORITIES
+    int "Maximum Task Priorities"
+    default 5
+    range 1 32
+
+config FREERTOS_MINIMAL_STACK_SIZE
+    int "Minimal Stack Size (words)"
+    default 128
+
+config FREERTOS_TOTAL_HEAP_SIZE
+    int "Total Heap Size (Bytes)"
+    default 10240
+
+config FREERTOS_USE_MUTEXES
+    bool "Enable Mutexes"
+    default y
+
+config FREERTOS_USE_COUNTING_SEMAPHORES
+    bool "Enable Counting Semaphores"
+    default y
+
+endmenu

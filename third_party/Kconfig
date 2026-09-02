@@ -1,0 +1,17 @@
+menu "Third-Party Libraries & Repositories"
+
+config THIRD_PARTY_USE_LIBS
+    bool "Enable Third-Party Libraries Layer"
+    default y
+
+if THIRD_PARTY_USE_LIBS
+
+source "third_party/cJSON/Kconfig"
+source "third_party/lwip/Kconfig"
+source "third_party/segger_rtt/Kconfig"
+source "third_party/easylogger/Kconfig"
+source "third_party/letter_shell/Kconfig"
+
+endif
+
+endmenu

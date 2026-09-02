@@ -1,0 +1,7 @@
+# ==============================================================================
+# FreeRTOS Make.defs
+# ==============================================================================
+
+INCDIRS += $(TOPDIR)/middlewares/rtos/freertos
+INCDIRS += $(TOPDIR)/middlewares/rtos/freertos/include
+INCDIRS += $(TOPDIR)/middlewares/rtos/freertos/portable/GCC/ARM_CM3

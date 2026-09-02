@@ -1,0 +1,7 @@
+# ==============================================================================
+# third_party/segger_rtt/Make.defs
+# ==============================================================================
+
+INCDIRS += $(TOPDIR)/third_party/segger_rtt
+
+CSRCS   += third_party/segger_rtt/SEGGER_RTT.c

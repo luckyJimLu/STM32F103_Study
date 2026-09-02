@@ -1,0 +1,22 @@
+menu "Application Configuration"
+
+config APP_ENABLE_HEARTBEAT
+    bool "Enable App LED Heartbeat Task"
+    default y
+    help
+        Periodically toggle LED as a heartbeat in application loop.
+
+config APP_LED_BLINK_INTERVAL_MS
+    int "Heartbeat Blink Interval (ms)"
+    default 500
+    depends on APP_ENABLE_HEARTBEAT
+    help
+        Delay interval for LED toggling in milliseconds.
+
+config APP_ENABLE_BUTTON_TASK
+    bool "Enable Key/Button Event Polling"
+    default y
+    help
+        Poll button state and output messages over serial.
+
+endmenu

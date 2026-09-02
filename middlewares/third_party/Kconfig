@@ -1,0 +1,15 @@
+menu "Third-Party Libraries"
+
+config USING_CJSON
+    bool "Enable cJSON (Ultralightweight JSON parser in C)"
+    default n
+    help
+        Include cJSON library in build.
+
+config USING_SEGGER_RTT
+    bool "Enable SEGGER RTT (Real Time Transfer) Debug Output"
+    default n
+    help
+        Include SEGGER RTT logging system.
+
+endmenu

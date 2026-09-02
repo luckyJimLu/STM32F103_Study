@@ -1,0 +1,26 @@
+menu "RT-Thread Nano Kernel Settings"
+    depends on RTOS_RTTHREAD
+
+config RT_THREAD_PRIORITY_MAX
+    int "Max Thread Priority Levels"
+    default 32
+    range 8 256
+
+config RT_TICK_PER_SECOND
+    int "Ticks Per Second (Hz)"
+    default 1000
+
+config RT_USING_HEAP
+    bool "Enable Dynamic Memory Heap"
+    default y
+
+config RT_USING_FINSH
+    bool "Enable FinSH / msh Shell Console"
+    default y
+
+config RT_CONSOLEBUF_SIZE
+    int "Console Buffer Size"
+    default 128
+    depends on RT_USING_FINSH
+
+endmenu

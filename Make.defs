@@ -1,0 +1,54 @@
+# ==============================================================================
+# Make.defs - Global Toolchain and Compilation Flags
+# ==============================================================================
+
+TOPDIR ?= $(CURDIR)
+BUILD_DIR ?= $(TOPDIR)/build/make
+
+# Load Kconfig configuration if .config exists
+-include $(TOPDIR)/.config
+
+# Check if local toolchain exists in tools/toolchain/bin
+ifneq ($(wildcard $(TOPDIR)/tools/toolchain/bin/arm-none-eabi-gcc*),)
+TOOLCHAIN_BIN ?= $(TOPDIR)/tools/toolchain/bin/
+else
+TOOLCHAIN_BIN ?=
+endif
+
+# Toolchain configuration
+CROSS_COMPILE ?= $(TOOLCHAIN_BIN)arm-none-eabi-
+CC             = $(CROSS_COMPILE)gcc
+CXX            = $(CROSS_COMPILE)g++
+AS             = $(CROSS_COMPILE)gcc -x assembler-with-cpp
+AR             = $(CROSS_COMPILE)ar
+OBJCOPY        = $(CROSS_COMPILE)objcopy
+OBJDUMP        = $(CROSS_COMPILE)objdump
+SIZE           = $(CROSS_COMPILE)size
+
+# Target Architecture Flags (Cortex-M3)
+ARCHFLAGS      = -mcpu=cortex-m3 -mthumb
+
+# Global Include Directories
+INCDIRS       += $(TOPDIR)/build/generated
+
+# Common Compiler Flags
+CFLAGS        += $(ARCHFLAGS) -Wall -fdata-sections -ffunction-sections -std=gnu11 -g3
+CXXFLAGS      += $(ARCHFLAGS) -Wall -fdata-sections -ffunction-sections -std=gnu++14 -fno-exceptions -fno-rtti -g3
+ASFLAGS       += $(ARCHFLAGS) -g3
+
+# Select Linker script based on Kconfig
+ifeq ($(CONFIG_CHIP_STM32F103ZE),y)
+LDSCRIPT       = $(TOPDIR)/linker/STM32F103ZETx_FLASH.ld
+CFLAGS        += -DSTM32F103xE
+else
+LDSCRIPT       = $(TOPDIR)/linker/STM32F103C8Tx_FLASH.ld
+CFLAGS        += -DSTM32F103xB
+endif
+
+# Linker Flags
+LDFLAGS       += $(ARCHFLAGS) -T$(LDSCRIPT) -Wl,--gc-sections -specs=nano.specs -specs=nosys.specs -Wl,-Map=$(BUILD_DIR)/$(TARGET).map
+
+# Include auto-generated autoconf header if available
+ifneq ($(wildcard $(TOPDIR)/build/generated/autoconf.h),)
+CFLAGS        += -include $(TOPDIR)/build/generated/autoconf.h
+endif

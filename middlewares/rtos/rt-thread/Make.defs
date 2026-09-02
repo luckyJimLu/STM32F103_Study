@@ -1,0 +1,9 @@
+# ==============================================================================
+# RT-Thread Nano Make.defs
+# ==============================================================================
+
+INCDIRS += $(TOPDIR)/middlewares/rtos/rt-thread
+INCDIRS += $(TOPDIR)/middlewares/rtos/rt-thread/include
+INCDIRS += $(TOPDIR)/middlewares/rtos/rt-thread/components/finsh
+
+CSRCS += middlewares/rtos/rt-thread/board.c

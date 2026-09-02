@@ -1,0 +1,28 @@
+menu "Board Support Package (BSP) Configuration"
+
+config BSP_USING_LED
+    bool "Enable On-board LED Driver"
+    default y
+    help
+        Enable LED GPIO driver (PC13 for BluePill / PB5 for ZET6).
+
+config BSP_USING_KEY
+    bool "Enable On-board Key/Button Driver"
+    default y
+    help
+        Enable Key input driver.
+
+config BSP_USING_USART1
+    bool "Enable USART1 Serial Output (printf retarget)"
+    default y
+    help
+        Enable USART1 as standard debugging output port with printf.
+
+config BSP_USART1_BAUDRATE
+    int "USART1 Baudrate"
+    default 115200
+    depends on BSP_USING_USART1
+    help
+        Communication baud rate for USART1 (e.g. 115200, 9600).
+
+endmenu

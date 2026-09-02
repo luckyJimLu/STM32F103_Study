@@ -1,0 +1,24 @@
+menu "Drivers & HAL Configuration"
+
+config DRIVER_USE_HAL
+    bool "Use STM32F1xx HAL Library"
+    default y
+    help
+        Enable ST Microelectronics Hardware Abstraction Layer.
+
+config DRIVER_HAL_GPIO
+    bool "Enable HAL GPIO Driver"
+    default y
+    depends on DRIVER_USE_HAL
+
+config DRIVER_HAL_UART
+    bool "Enable HAL UART Driver"
+    default y
+    depends on DRIVER_USE_HAL
+
+config DRIVER_HAL_RCC
+    bool "Enable HAL RCC Driver"
+    default y
+    depends on DRIVER_USE_HAL
+
+endmenu

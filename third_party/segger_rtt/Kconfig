@@ -1,0 +1,5 @@
+config USING_SEGGER_RTT
+    bool "Enable SEGGER RTT (Real Time Transfer Log)"
+    default n
+    help
+        Include SEGGER RTT debug channel. Transmit logs at ultra-high speed via SWD/JTAG without occupying UART pins.

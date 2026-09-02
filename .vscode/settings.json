@@ -1,0 +1,10 @@
+{
+  "cmake.configureOnOpen": true,
+  "cmake.generator": "Ninja",
+  "files.associations": {
+    "*.h": "c",
+    "*.c": "c",
+    "*.s": "arm",
+    "*.S": "arm"
+  }
+}

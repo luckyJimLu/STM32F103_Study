@@ -1,0 +1,55 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build Baremetal (Ninja)",
+      "type": "shell",
+      "command": "cmake --preset baremetal-debug && cmake --build --preset baremetal-debug",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": "$gcc"
+    },
+    {
+      "label": "Build RT-Thread (Ninja)",
+      "type": "shell",
+      "command": "cmake --preset rtt-debug && cmake --build --preset rtt-debug",
+      "group": "build",
+      "problemMatcher": "$gcc"
+    },
+    {
+      "label": "Build FreeRTOS (Ninja)",
+      "type": "shell",
+      "command": "cmake --preset freertos-debug && cmake --build --preset freertos-debug",
+      "group": "build",
+      "problemMatcher": "$gcc"
+    },
+    {
+      "label": "Build via Make",
+      "type": "shell",
+      "command": "make -j4",
+      "group": "build",
+      "problemMatcher": "$gcc"
+    },
+    {
+      "label": "Kconfig Menuconfig",
+      "type": "shell",
+      "command": "python scripts/menuconfig.py",
+      "problemMatcher": []
+    },
+    {
+      "label": "Kconfig GUI Config",
+      "type": "shell",
+      "command": "python scripts/menuconfig.py --gui",
+      "problemMatcher": []
+    },
+    {
+      "label": "Flash via ST-Link",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/flash.bat",
+      "dependsOn": "Build Baremetal (Ninja)",
+      "problemMatcher": []
+    }
+  ]
+}

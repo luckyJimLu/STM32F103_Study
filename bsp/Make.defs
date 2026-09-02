@@ -1,0 +1,19 @@
+# ==============================================================================
+# bsp/Make.defs - BSP Layer Build Definitions
+# ==============================================================================
+
+INCDIRS += $(TOPDIR)/bsp/inc
+
+CSRCS += bsp/src/bsp.c
+
+ifeq ($(CONFIG_BSP_USING_LED),y)
+CSRCS += bsp/src/bsp_led.c
+endif
+
+ifeq ($(CONFIG_BSP_USING_KEY),y)
+CSRCS += bsp/src/bsp_key.c
+endif
+
+ifeq ($(CONFIG_BSP_USING_USART1),y)
+CSRCS += bsp/src/bsp_usart.c
+endif
