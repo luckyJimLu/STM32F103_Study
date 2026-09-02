@@ -7,6 +7,7 @@
 ## 📑 已归档官方文档与数据简报
 
 - [📄 DB2163 - STM32CubeMX 数据简报与架构解析](DB2163_STM32CubeMX_Data_Brief.md)：STM32CubeMX 图形配置工具特性、时钟求解器、STM32Cube 生态工具链组成。
+- [📘 UM1718 - STM32CubeMX 配置与初始化 C 代码生成用户手册](UM1718_STM32CubeMX_User_Manual.md)：完整中文正文整理版，包含原页码定位、可点击目录及 STM32F103 学习重点导航。
 
 ---
 
@@ -19,6 +20,7 @@
 | **DS5319** | *STM32F103x8, STM32F103xB DataSheet* | 中密度芯片（64K/128K Flash）电气特性、引脚定义、时序与封装尺寸 |
 | **DS5792** | *STM32F103xC, STM32F103xD, STM32F103xE DataSheet* | 高密度芯片（256K~512K Flash）电气特性、FSMC 接口与引脚分布 |
 | **UM1850** | *Description of STM32F1 HAL and low-layer drivers* | ST 官方 HAL/LL 驱动库 API 参考手册 |
+| **UM1718** | *STM32CubeMX for STM32 configuration and initialization C code generation* | STM32CubeMX 安装、界面、引脚/时钟/外设配置、代码生成、教程与常见问题 |
 | **DB2163** | *STM32CubeMX Data Brief* | STM32CubeMX 配置与初始化 C 代码生成工具说明简报 |
 | **AN2586** | *Getting started with STM32F10xxx hardware development* | 官方硬件电路设计指南（电源去耦、时钟布局、布线注意事项） |
 | **AN2606** | *STM32 microcontroller system memory boot mode* | 内置 Bootloader 通信协议与 ISP 串口下载详解 |
