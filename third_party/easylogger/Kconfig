@@ -1,5 +1,0 @@
-config USING_EASYLOGGER
-    bool "Enable EasyLogger (Ultra-lightweight Logging Library)"
-    default n
-    help
-        Include EasyLogger lightweight and high performance logging library.

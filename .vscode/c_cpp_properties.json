@@ -1,25 +1,9 @@
 {
   "configurations": [
     {
-      "name": "ARM-GCC",
-      "includePath": [
-        "${workspaceFolder}/**",
-        "${workspaceFolder}/app/inc",
-        "${workspaceFolder}/bsp/inc",
-        "${workspaceFolder}/drivers/CMSIS/Core/Include",
-        "${workspaceFolder}/drivers/CMSIS/Device/ST/STM32F1xx/Include",
-        "${workspaceFolder}/drivers/STM32F1xx_HAL_Driver/Inc",
-        "${workspaceFolder}/middlewares/rtos/rt-thread",
-        "${workspaceFolder}/middlewares/rtos/rt-thread/include",
-        "${workspaceFolder}/middlewares/rtos/freertos",
-        "${workspaceFolder}/middlewares/rtos/freertos/include",
-        "${workspaceFolder}/middlewares/rtos/freertos/portable/GCC/ARM_CM3"
-      ],
-      "defines": [
-        "STM32F103xB",
-        "USE_HAL_DRIVER"
-      ],
-      "compilerPath": "arm-none-eabi-gcc",
+      "name": "ARM-GCC active menuconfig",
+      "compileCommands": "${workspaceFolder}/build/out/configured-debug/compile_commands.json",
+      "compilerPath": "${workspaceFolder}/tools/toolchain/bin/arm-none-eabi-gcc.exe",
       "cStandard": "gnu11",
       "cppStandard": "gnu++14",
       "intelliSenseMode": "gcc-arm"

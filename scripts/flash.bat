@@ -3,7 +3,9 @@ setlocal EnableExtensions
 REM Flash script for STM32F103 using OpenOCD and ST-Link
 
 for %%I in ("%~dp0..") do set "PROJECT_ROOT=%%~fI"
-set "ELF_FILE=%PROJECT_ROOT%\build\out\baremetal-debug\STM32F103_Study.elf"
+set "PRESET=%~1"
+if not defined PRESET set "PRESET=configured-debug"
+set "ELF_FILE=%PROJECT_ROOT%\build\out\%PRESET%\STM32F103_Study.elf"
 
 if not exist "%ELF_FILE%" (
     echo [ERROR] ELF file not found. Please build the project first.

@@ -2,19 +2,28 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Cortex-Debug (OpenOCD ST-Link)",
+      "name": "Debug active config as BluePill C8",
       "cwd": "${workspaceFolder}",
-      "executable": "${workspaceFolder}/build/out/baremetal-debug/STM32F103_Study.elf",
+      "executable": "${workspaceFolder}/build/out/configured-debug/STM32F103_Study.elf",
       "request": "launch",
       "type": "cortex-debug",
       "servertype": "openocd",
       "device": "STM32F103C8",
-      "configFiles": [
-        "${workspaceFolder}/scripts/openocd_stlink.cfg"
-      ],
-      "svdFile": "",
+      "configFiles": ["${workspaceFolder}/scripts/openocd_stlink.cfg"],
       "runToEntryPoint": "main",
-      "preLaunchTask": "Build Baremetal (Ninja)"
+      "preLaunchTask": "Build active menuconfig"
+    },
+    {
+      "name": "Debug active config as ALIENTEK F103ZE",
+      "cwd": "${workspaceFolder}",
+      "executable": "${workspaceFolder}/build/out/configured-debug/STM32F103_Study.elf",
+      "request": "launch",
+      "type": "cortex-debug",
+      "servertype": "openocd",
+      "device": "STM32F103ZE",
+      "configFiles": ["${workspaceFolder}/scripts/openocd_stlink.cfg"],
+      "runToEntryPoint": "main",
+      "preLaunchTask": "Build active menuconfig"
     }
   ]
 }

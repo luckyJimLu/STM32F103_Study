@@ -2,56 +2,40 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Build Baremetal (Ninja)",
+      "label": "Build active menuconfig",
       "type": "shell",
       "command": "${workspaceFolder}\\build\\build.bat",
-      "args": ["baremetal-debug"],
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
+      "args": ["configured-debug"],
+      "group": { "kind": "build", "isDefault": true },
       "problemMatcher": "$gcc"
     },
     {
-      "label": "Build RT-Thread (Ninja)",
+      "label": "Build all product/system images",
       "type": "shell",
       "command": "${workspaceFolder}\\build\\build.bat",
-      "args": ["rtt-debug"],
-      "group": "build",
-      "problemMatcher": "$gcc"
-    },
-    {
-      "label": "Build FreeRTOS (Ninja)",
-      "type": "shell",
-      "command": "${workspaceFolder}\\build\\build.bat",
-      "args": ["freertos-debug"],
-      "group": "build",
-      "problemMatcher": "$gcc"
-    },
-    {
-      "label": "Clean All Builds",
-      "type": "shell",
-      "command": "${workspaceFolder}\\build\\clean.bat",
       "args": ["all"],
-      "problemMatcher": []
+      "group": "build",
+      "problemMatcher": "$gcc"
     },
     {
-      "label": "Kconfig Menuconfig",
+      "label": "Kconfig menuconfig",
       "type": "shell",
       "command": "python scripts/menuconfig.py",
       "problemMatcher": []
     },
     {
-      "label": "Kconfig GUI Config",
+      "label": "Flash active configuration",
       "type": "shell",
-      "command": "python scripts/menuconfig.py --gui",
+      "command": "${workspaceFolder}\\scripts\\flash.bat",
+      "args": ["configured-debug"],
+      "dependsOn": "Build active menuconfig",
       "problemMatcher": []
     },
     {
-      "label": "Flash via ST-Link",
+      "label": "Clean all builds",
       "type": "shell",
-      "command": "${workspaceFolder}/scripts/flash.bat",
-      "dependsOn": "Build Baremetal (Ninja)",
+      "command": "${workspaceFolder}\\build\\clean.bat",
+      "args": ["all"],
       "problemMatcher": []
     }
   ]

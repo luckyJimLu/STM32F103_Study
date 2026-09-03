@@ -1,5 +1,0 @@
-config USING_CJSON
-    bool "Enable cJSON (Lightweight JSON Parser)"
-    default n
-    help
-        Include cJSON library for parsing and generating JSON data.

@@ -2,7 +2,8 @@
 # Flash script for STM32F103 using OpenOCD and ST-Link
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-ELF_FILE="$PROJECT_ROOT/build/out/baremetal-debug/STM32F103_Study.elf"
+PRESET="${1:-configured-debug}"
+ELF_FILE="$PROJECT_ROOT/build/out/$PRESET/STM32F103_Study.elf"
 
 if [ ! -f "$ELF_FILE" ]; then
     echo "[ERROR] ELF file not found. Please build the project first."

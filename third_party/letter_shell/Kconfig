@@ -1,5 +1,0 @@
-config USING_LETTER_SHELL
-    bool "Enable Letter Shell (Interactive Embedded Shell)"
-    default n
-    help
-        Include Letter Shell for command line interaction over serial UART.

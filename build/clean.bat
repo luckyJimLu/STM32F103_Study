@@ -8,14 +8,7 @@ set "PRESET=%~1"
 if not defined PRESET set "PRESET=all"
 
 if /i "%PRESET%"=="all" goto clean_all
-if /i "%PRESET%"=="baremetal-debug" goto clean_one
-if /i "%PRESET%"=="baremetal-release" goto clean_one
-if /i "%PRESET%"=="rtt-debug" goto clean_one
-if /i "%PRESET%"=="freertos-debug" goto clean_one
-
-echo [ERROR] Unknown preset: %PRESET%
-echo [INFO] Valid values: all, baremetal-debug, baremetal-release, rtt-debug, freertos-debug
-exit /b 2
+goto clean_one
 
 :clean_all
 set "CLEAN_TARGET=%PROJECT_ROOT%\build\out"

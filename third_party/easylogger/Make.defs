@@ -1,9 +1,0 @@
-# ==============================================================================
-# third_party/easylogger/Make.defs
-# ==============================================================================
-
-INCDIRS += $(TOPDIR)/third_party/easylogger
-INCDIRS += $(TOPDIR)/third_party/easylogger/inc
-
-CSRCS   += $(wildcard $(TOPDIR)/third_party/easylogger/src/*.c)
-CSRCS   += $(wildcard $(TOPDIR)/third_party/easylogger/port/*.c)

@@ -5,24 +5,14 @@ call "%~dp0_env.bat"
 if errorlevel 1 exit /b 1
 
 set "PRESET=%~1"
-if not defined PRESET set "PRESET=baremetal-debug"
+if not defined PRESET set "PRESET=configured-debug"
 
-if /i "%PRESET%"=="all" goto build_all
+if /i "%PRESET%"=="all" (
+    python "%PROJECT_ROOT%\scripts\build_matrix.py"
+    exit /b %ERRORLEVEL%
+)
 call :build_one "%PRESET%"
 exit /b %ERRORLEVEL%
-
-:build_all
-call :build_one "baremetal-debug"
-if errorlevel 1 exit /b 1
-call :build_one "baremetal-release"
-if errorlevel 1 exit /b 1
-call :build_one "rtt-debug"
-if errorlevel 1 exit /b 1
-call :build_one "freertos-debug"
-if errorlevel 1 exit /b 1
-echo.
-echo [SUCCESS] All presets built successfully.
-exit /b 0
 
 :build_one
 set "CURRENT_PRESET=%~1"

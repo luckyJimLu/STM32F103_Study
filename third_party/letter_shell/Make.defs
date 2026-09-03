@@ -1,7 +1,0 @@
-# ==============================================================================
-# third_party/letter_shell/Make.defs
-# ==============================================================================
-
-INCDIRS += $(TOPDIR)/third_party/letter_shell/src
-
-CSRCS   += $(wildcard $(TOPDIR)/third_party/letter_shell/src/*.c)
