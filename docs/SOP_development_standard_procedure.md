@@ -63,7 +63,7 @@ graph LR
 ## SOP-02：Kconfig 可视化裁剪与功能配置
 
 ### 目的
-通过图形化菜单直观选择芯片型号、运行模式（裸机 / RT-Thread / FreeRTOS）、启用的外设驱动与三方库。
+通过图形化菜单直观选择产品板型、运行模式（裸机 / RT-Thread / FreeRTOS）和启用的板级外设。
 
 ### 操作步骤
 1. **启动配置菜单**：
@@ -80,15 +80,13 @@ graph LR
      python scripts/menuconfig.py --gui
      ```
 2. **核心选项配置流程**：
-   - `Target Chip & Architecture Configuration` -> 选择芯片型号（如 `STM32F103CB` 或 `STM32F103ZE`）。
+   - `Product Board Selection` -> 选择 BluePill C8 或正点原子精英 ZE。
    - `Operating System (RTOS) Selection` -> 选择 `Bare-metal`、`RT-Thread Nano` 或 `FreeRTOS`。
    - `Board Support Package (BSP) Configuration` -> 勾选/取消板载 LED、按键、串口等外设。
-   - `Third-Party Libraries & Repositories` -> 勾选所需三方库（如 cJSON、LwIP、SEGGER RTT）。
 3. **保存并生成**：
    - 键盘操作：按 `S` 保存为 `.config`，按 `Q` 退出。
-   - 系统将自动同步生成：
-     - `build/generated/autoconf.h` (C 语言宏定义头文件)
-     - `cmake/kconfig.cmake` (CMake 构建参数)
+   - `.config` 只保存本地选择；CMake 在每个 `build/out/<preset>/generated/`
+     独立生成 `autoconf.h` 和 `kconfig.cmake`。
 
 ---
 
@@ -121,8 +119,8 @@ graph LR
 ### 开发四步法
 
 ```
-[1. 编写源码]         [2. 注册 Kconfig]       [3. 编写 Make.defs]      [4. 验证测试]
-bsp_oled.c/h  -->   bsp/Kconfig     -->   bsp/Make.defs     -->  make menuconfig
+[1. 编写源码]         [2. 注册 Kconfig]       [3. 注册 CMake 源码]      [4. 验证矩阵]
+bsp_oled.c/h  -->   bsp/Kconfig     -->   bsp/CMakeLists.txt  -->  make matrix
 ```
 
 1. **步骤 1：新建头文件与源文件**
@@ -135,11 +133,11 @@ bsp_oled.c/h  -->   bsp/Kconfig     -->   bsp/Make.defs     -->  make menuconfig
        help
            Enable 0.96 inch SSD1306 OLED display driver.
    ```
-3. **步骤 3：在 `bsp/Make.defs` 中添加条件编译规则**
-   ```makefile
-   ifeq ($(CONFIG_BSP_USING_OLED),y)
-   CSRCS += bsp/src/bsp_oled.c
-   endif
+3. **步骤 3：在 `bsp/CMakeLists.txt` 中添加条件编译规则**
+   ```cmake
+   if(CONFIG_BSP_USING_OLED)
+       target_sources(bsp_lib PRIVATE src/bsp_oled.c)
+   endif()
    ```
 4. **步骤 4：在 `bsp/inc/bsp.h` 与 `bsp/src/bsp.c` 中按宏接入初始化**
    ```c
@@ -213,23 +211,22 @@ bsp_oled.c/h  -->   bsp/Kconfig     -->   bsp/Make.defs     -->  make menuconfig
 
 ---
 
-## SOP-06：三方开源库 (LwIP/cJSON/RTT) 引入与调用
+## SOP-06：第三方开源库引入与调用
 
 ### 目的
-规范使用 `third_party/` 目录下的常用开源库。
+规范将完整、可追溯的第三方组件接入 `third_party/`。当前目录中的现有组件均为
+不完整参考占位，不参与 menuconfig 或固件构建。
 
 ### 操作步骤
-1. **启用组件**：
-   - 运行 `make menuconfig` 进入 `Third-Party Libraries & Repositories`，勾选目标库（如 `Enable cJSON` 或 `Enable SEGGER RTT`）。
-2. **源码拉取与更新 (如需完整官方仓库)**：
+1. **固定源码版本并保留许可证**：
    ```bash
    # LwIP
    git clone -b STABLE-2_1_3_RELEASE https://git.savannah.nongnu.org/git/lwip.git third_party/lwip/src
    # Letter Shell
    git clone https://github.com/NevermindZZT/letter-shell.git third_party/letter_shell/src
    ```
-3. **代码调用**：
-   - 直接在业务文件中 `#include "cJSON.h"` 或 `#include "SEGGER_RTT.h"` 即可使用。
+2. **完成端口与测试**：只有具备目标平台端口、CMake 显式源码清单和构建测试后，
+   才能新增 Kconfig 选项；禁止为缺失源码的目录创建可选功能。
 
 ---
 
@@ -244,14 +241,14 @@ cmake -B build -G Ninja
 cmake --build build
 
 # 或使用 CMakePresets 预设
-cmake --preset baremetal-debug
-cmake --build --preset baremetal-debug
+cmake --preset bluepill-baremetal-debug
+cmake --build --preset bluepill-baremetal-debug
 ```
 
-### 2. 方式二：GNU Make 构建
+### 2. GNU Make 便捷包装
 ```bash
-# 多线程并行编译
-make -j4
+# Make 仍调用 CMake preset，不维护独立源码清单
+make PRESET=bluepill-baremetal-debug
 
 # 清理构建产物
 make clean
@@ -290,7 +287,7 @@ make flash
 
 ### 3. VS Code 在线断点仿真
 1. 安装 VS Code 插件：`Cortex-Debug` 与 `C/C++`。
-2. 确保目标固件已编译（`build/baremetal-debug/STM32F103_Study.elf` 存在）。
+2. 确保目标固件已编译（例如 `build/out/bluepill-baremetal-debug/STM32F103_Study.elf`）。
 3. 按键盘 **`F5`** 启动调试，支持图形化断点、单步执行（F10/F11）、变量监视与外设寄存器查看。
 
 ---

@@ -5,7 +5,7 @@
 使用 **CMake + Ninja + arm-none-eabi-gcc** 可以带来以下核心优势：
 1. **极速构建**：Ninja 基于 DAG 依赖图执行并行编译，秒级完成大型嵌入式工程构建。
 2. **跨平台兼容**：在 Windows、macOS、Linux 下拥有一致的构建体验。
-3. **宏与模块化管理**：通过 CMake 的 `option()`、`add_compile_definitions()` 方便地管理 RTOS 与外设组件。
+3. **宏与模块化管理**：通过 Kconfig 和目标级 CMake 配置管理产品、RTOS 与外设组件。
 4. **易于自动化与集成**：无缝对接 VS Code、CLion 以及 GitHub Actions。
 
 ---
@@ -38,16 +38,16 @@
 
 ```bash
 # 1. 裸机 Debug 模式配置与编译
-cmake --preset baremetal-debug
-cmake --build --preset baremetal-debug
+cmake --preset bluepill-baremetal-debug
+cmake --build --preset bluepill-baremetal-debug
 
 # 2. RT-Thread Nano 模式配置与编译
-cmake --preset rtt-debug
-cmake --build --preset rtt-debug
+cmake --preset bluepill-rtthread-debug
+cmake --build --preset bluepill-rtthread-debug
 
 # 3. FreeRTOS 模式配置与编译
-cmake --preset freertos-debug
-cmake --build --preset freertos-debug
+cmake --preset bluepill-freertos-debug
+cmake --build --preset bluepill-freertos-debug
 ```
 
 ### 方式二：标准命令行手动配置
@@ -56,8 +56,7 @@ cmake --build --preset freertos-debug
 cmake -B build -G Ninja \
       -DCMAKE_TOOLCHAIN_FILE=cmake/arm-none-eabi-gcc.cmake \
       -DCMAKE_BUILD_TYPE=Debug \
-      -DCHIP_TYPE=STM32F103xB \
-      -DUSE_RTOS=NONE
+      -DPROJECT_CONFIG_FILE=product/bluepill_f103c8/configs/baremetal_defconfig
 
 # 2. 执行编译
 cmake --build build

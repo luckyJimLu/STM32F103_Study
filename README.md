@@ -1,101 +1,80 @@
-# STM32F103 模块化嵌入式开发与实战工程
+# STM32F103 多产品、三系统学习工程
 
-本项目是基于 **STM32F103**（支持 STM32F103C8T6 / STM32F103ZET6 等型号）搭建的现代化、标准化、模块化嵌入式实战工程。
+同一套应用和 BSP 代码可由 menuconfig 组合为两种产品板和三种运行系统：
 
-工程支持 **Kconfig 图形化菜单配置 (menuconfig / guiconfig)**，采用 **CMake + Ninja** 与 **Make + Make.defs** 双重构建支持体系，支持通过宏控制在 **裸机 (Bare-metal)**、**RT-Thread Nano** 以及 **FreeRTOS** 系统之间无缝切换，并配备 **`tools/` 工具链**、**`third_party/` 常用三方开源仓** 以及规范的 **SOP 标准作业程序**。
+| 产品 | MCU | 板载资源 |
+| --- | --- | --- |
+| BluePill | STM32F103C8T6，64KB Flash/20KB SRAM | PC13 LED、USART1 PA9/PA10；无用户按键 |
+| 正点原子精英板 | STM32F103ZET6，512KB Flash/64KB SRAM | PB5/PE5 LED、PE4/PE3/PA0 按键、USART1 |
 
----
+运行系统为裸机、RT-Thread Nano 3.1.5 或 FreeRTOS。产品和系统均通过
+Kconfig choice 生成互斥宏，不需要修改业务源码。
 
-## 📁 目录架构全景
+## 架构
 
-```
-STM32F103_Study/
-├── .config                      # Kconfig 生成的当前工程配置
-├── Kconfig                      # 顶级 Kconfig 菜单配置入口
-├── Make.defs                    # 全局 Make 工具链与编译参数定义
-├── Makefile                     # 顶级 Makefile (支持 make, make menuconfig, make flash)
-├── CMakeLists.txt               # 顶级 CMake 构建入口 (自动联动 .config)
-├── CMakePresets.json            # CMake 预设 (Ninja 快速编译)
-├── .vscode/                     # VS Code 开发与一键编译/调试配置
-├── build/                       # 构建/清除脚本、生成配置与 build/out 编译产物
-├── cmake/                       # CMake 构建模块与工具链
-├── tools/                       # 🛠️ 本地编译工具链与环境工具 (arm-none-eabi-gcc / openocd / ninja)
-├── third_party/                 # 📦 常用第三方开源仓 (cJSON / LwIP / SEGGER RTT / EasyLogger / Letter Shell)
-├── app/                         # 应用层业务代码 (Kconfig / Make.defs / CMakeLists.txt)
-├── bsp/                         # 板级支持包 (Kconfig / Make.defs / CMakeLists.txt)
-├── drivers/                     # 芯片底层驱动库 (CMSIS + HAL)
-├── middlewares/                 # 中间件与操作系统层 (RT-Thread Nano / FreeRTOS)
-├── linker/                      # 链接脚本 (STM32F103C8Tx_FLASH.ld / STM32F103ZETx_FLASH.ld)
-├── scripts/                     # 脚本工具 (menuconfig, flash)
-└── docs/                        # 📚 知识库与实战文档
-    ├── SOP_development_standard_procedure.md # 🚀 嵌入式开发标准作业程序 (SOP)
-    ├── board_resources/         # 正点原子精英板资料、模块摘要与引脚速查
-    ├── hardware/                # 硬件原理图与最小系统设计指南
-    ├── porting_guides/          # 移植与环境搭建手册
-    │   ├── 01_cmake_ninja_setup.md
-    │   ├── 02_rt_thread_nano_porting.md
-    │   ├── 03_freertos_porting.md
-    │   ├── 04_kconfig_menuconfig_guide.md
-    │   └── 05_stm32cubemx_integration_guide.md
-    └── st_official_docs/        # ST 官方核心参考文档索引 (RM0008, PM0056, DB2163 等)
+```text
+product profile + autoconf
+           ↓
+CMSIS → compact HAL → BSP → application
+                         ↖ system runtime port
+                            ├─ bare-metal
+                            ├─ RT-Thread Nano
+                            └─ FreeRTOS
 ```
 
----
+- `product/`：产品时钟、容量、引脚、链接参数和六份 defconfig。
+- `platform/`：统一启动接口和三种系统端口，独占各自 SysTick。
+- `app/`：不引用任何 RTOS 头文件的共享应用逻辑。
+- `bsp/`：只使用产品资源宏，不判断芯片型号。
+- `drivers/`：STM32CubeF1 v1.8.7 CMSIS 与精简 HAL。
+- `middlewares/rtos/`：保持当前版本的 RT-Thread Nano 和 FreeRTOS。
+- `third_party/`：未完成的参考占位，当前不参与配置或构建。
 
-## ⚡ 快速使用指南
+更完整的设计约束见 [架构说明](docs/architecture.md)。
 
-### 1. 查阅标准作业程序 (SOP)
-在开始开发或扩展模块前，强烈建议阅读：
-👉 **[STM32F103 模块化嵌入式开发标准作业程序 (SOP)](docs/SOP_development_standard_procedure.md)**
+## 配置
 
-### 2. 启动 menuconfig 进行功能裁剪
-```bash
-# 终端模式
-python scripts/menuconfig.py
-# 或
-make menuconfig
-
-# 图形窗口模式
-python scripts/menuconfig.py --gui
-# 或
-make guiconfig
-```
-
-### 3. 编译项目（Windows 免安装工具链）
 ```bat
-REM 默认编译裸机 Debug 版本
+python scripts\menuconfig.py
+```
+
+保存后只更新本地 `.config`。它不会入库；可复现配置位于每个产品的
+`configs/*_defconfig`。构建生成的 `autoconf.h` 位于各自构建目录，配置之间
+不会互相覆盖。
+
+## 构建
+
+Windows 仓库内置 CMake、Ninja 和 GNU Arm Toolchain：
+
+```bat
+REM 使用当前 .config；没有 .config 时默认 BluePill + 裸机
 build\build.bat
 
-REM 也可编译指定预设或全部预设
-build\build.bat baremetal-release
-build\build.bat rtt-debug
-build\build.bat freertos-debug
+REM 构建一个固定组合
+build\build.bat bluepill-rtthread-debug
+build\build.bat atk-elite-freertos-release
+
+REM 两产品 × 三系统 × Debug/Release
 build\build.bat all
-
-REM 清除全部产物，或只清除一个预设
-build\clean.bat
-build\clean.bat baremetal-debug
 ```
 
-脚本只使用 `tools/` 内的 CMake、Ninja 和 GNU Arm Toolchain，不要求在 Windows
-中安装这些工具或配置系统 `PATH`。固件输出到 `build/out/<preset>/`。
+GNU Make 仅是 CMake 的便捷包装，不再维护独立源码清单：
 
-### 4. 一键烧录
 ```bash
-scripts\flash.bat
-# 或
-make flash
+make menuconfig
+make PRESET=atk-elite-baremetal-debug
+make matrix
 ```
 
----
+每次链接后自动检查产品 Flash/RAM 上限、入口/SysTick 符号以及 RTOS 互斥性。
+ELF、HEX、BIN 和 MAP 输出到 `build/out/<preset>/`。
 
-## 📚 知识库导航
-- **[🚀 模块化嵌入式开发标准作业程序 (SOP)](docs/SOP_development_standard_procedure.md)**
-- [正点原子精英 STM32F103 开发板资料](docs/board_resources/README.md)
-- [硬件原理图设计与最小系统指南](docs/hardware/schematics_guide.md)
-- [01 - CMake + Ninja 编译环境搭建实战](docs/porting_guides/01_cmake_ninja_setup.md)
-- [02 - RT-Thread Nano 移植手册与实战](docs/porting_guides/02_rt_thread_nano_porting.md)
-- [03 - FreeRTOS 移植手册与实战](docs/porting_guides/03_freertos_porting.md)
-- [04 - Kconfig 可视化裁剪与 Make.defs 构建描述层实战](docs/porting_guides/04_kconfig_menuconfig_guide.md)
-- [05 - STM32CubeMX 图形化配置与代码生成对接实战](docs/porting_guides/05_stm32cubemx_integration_guide.md)
-- [ST 官方核心参考手册与简报索引](docs/st_official_docs/README.md)
+## 烧录与调试
+
+```bat
+scripts\flash.bat bluepill-baremetal-debug
+scripts\flash.bat atk-elite-rtthread-debug
+```
+
+VS Code 提供当前 menuconfig 配置的构建、烧录和两种 MCU 调试入口。串口默认
+115200 8N1，启动日志会打印产品、运行系统和实际系统时钟。
