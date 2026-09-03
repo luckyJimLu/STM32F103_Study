@@ -32,6 +32,8 @@ __pycache__/
 *.d
 *.i
 *.s
+!drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/gcc/*.s
+!middlewares/rtos/rt-thread/libcpu/arm/cortex-m3/*.S
 
 # OS artifacts
 Thumbs.db
