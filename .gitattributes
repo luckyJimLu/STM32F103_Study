@@ -1,0 +1,3 @@
+# Preserve vendored upstream whitespace exactly while keeping diff checks useful
+# for project-owned sources.
+drivers/CMSIS/** -whitespace
