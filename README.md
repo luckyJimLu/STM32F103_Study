@@ -5,7 +5,7 @@
 | 产品 | MCU | 板载资源 |
 | --- | --- | --- |
 | BluePill | STM32F103C8T6，64KB Flash/20KB SRAM | PC13 LED、USART1 PA9/PA10；无用户按键 |
-| 正点原子精英板 | STM32F103ZET6，512KB Flash/64KB SRAM | PB5/PE5 LED、PE4/PE3/PA0 按键、USART1 |
+| 正点原子精英板（默认） | STM32F103ZET6，512KB Flash/64KB SRAM | PB5/PE5 LED、PE4/PE3/PA0 按键、板载 USB 转串口（USART1 PA9/PA10） |
 
 运行系统为裸机、RT-Thread Nano 3.1.5 或 FreeRTOS。产品和系统均通过
 Kconfig choice 生成互斥宏，不需要修改业务源码。
@@ -48,7 +48,7 @@ python scripts\menuconfig.py
 Windows 仓库内置 CMake、Ninja 和 GNU Arm Toolchain：
 
 ```bat
-REM 使用当前 .config；没有 .config 时默认 BluePill + 裸机
+REM 使用当前 .config；没有 .config 时默认 正点原子精英板 F103ZE + 裸机
 build\build.bat
 
 REM 构建一个固定组合
@@ -72,10 +72,18 @@ ELF、HEX、BIN 和 MAP 输出到 `build/out/<preset>/`。
 
 ## 烧录与调试
 
+本项目默认使用 **SEGGER J-Link** 进行固件烧录与在线调试（**无需安装 OpenOCD 或 ST-Link**）：
+
 ```bat
-scripts\flash.bat bluepill-baremetal-debug
-scripts\flash.bat atk-elite-rtthread-debug
+REM 默认构建并烧录 正点原子精英板 F103ZE 裸机固件
+build\build.bat
+scripts\flash.bat
+
+REM 烧录指定预设构建固件
+scripts\flash.bat atk-elite-baremetal-debug
+
+REM 烧录当前 menuconfig 激活配置
+scripts\flash.bat configured-debug
 ```
 
-VS Code 提供当前 menuconfig 配置的构建、烧录和两种 MCU 调试入口。串口默认
-115200 8N1，启动日志会打印产品、运行系统和实际系统时钟。
+VS Code 原生支持 J-Link GDB Server 调试，按 `F5` 即以 `STM32F103ZE + SWD` 启动。板载 USB 转串口使用 `USART1`（PA9/PA10），串口参数为 `115200 8N1`；启动日志会打印产品、运行系统和实际系统时钟。串口在电脑上的 COM 号由 Windows 动态分配，请在设备管理器或串口工具中选择实际出现的端口。

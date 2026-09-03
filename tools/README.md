@@ -13,9 +13,8 @@
 | **构建执行器** | **Ninja** | 1.10 及以上 | 极速高并发底层构建引擎 | **必装** | [Ninja 官方 Release](https://github.com/ninja-build/ninja/releases) |
 | **配置工具** | **Python 3** | 3.8 及以上 | 运行 Kconfig 图形化菜单 `menuconfig.py` 及脚本 | **必装** | [Python 官方下载](https://www.python.org/downloads/) |
 | **配置依赖** | **kconfiglib** | 最新版本 | Kconfig 菜单解析与 `.config` 生成依赖包 | **必装** | `pip install kconfiglib windows-curses` |
-| **版本控制** | **Git** | 2.30 及以上 | 代码版本管理与子模块管理 | **必装** | [Git 官方网站](https://git-scm.com/) |
-| **调试与烧录** | **OpenOCD** | 0.11+ / 0.12+ | 支持 DAP-Link / ST-Link / J-Link 调试与下载 | **推荐** | [OpenOCD Windows Builds](https://github.com/openocd-org/openocd/releases) |
-| **硬件初始化** | **STM32CubeMX** | 6.8.0 及以上 | 外设图形化引脚配置与 HAL 代码生成 | **可选/推荐** | [ST 官网 STM32CubeMX](https://www.st.com/en/development-tools/stm32cubemx.html) |
+| **调试与烧录** | **SEGGER J-Link** | V7.x 及以上 | 官方 J-Link 驱动套件 (`JLink.exe`, `JLinkGDBServerCL.exe`)，用于固件一键极速烧录与在线断点调试（**本项目默认使用**，无需额外安装 OpenOCD） | **必装/默认** | [SEGGER J-Link 官网下载](https://www.segger.com/downloads/jlink/) |
+| **片上调试 (可选)** | **OpenOCD** | 0.11+ / 0.12+ | 开源片上调试器，若使用 ST-Link / DAP-Link 时可选安装（使用 J-Link 时无需安装） | 可选 | [OpenOCD Windows Builds](https://github.com/openocd-org/openocd/releases) |
 | **固件工具** | **STM32CubeProgrammer** | 最新版 | ST 官方芯片烧录、读保护解除与 Option Byte 工具 | 可选 | [ST 官网 STM32CubeProg](https://www.st.com/en/development-tools/stm32cubeprog.html) |
 | **代码格式化** | **LLVM (clang-format)** | 14.0 及以上 | 根据 `.clang-format` 规范统一代码格式 | 推荐 | [LLVM Releases](https://github.com/llvm/llvm-project/releases) |
 | **串口调试助手** | **VOFA+ / MobaXterm** | 最新版 | 接收串口调试日志（115200 波特率）或波形可视化 | 推荐 | [VOFA+ 官网](https://www.vofa.plus/) |
@@ -115,7 +114,7 @@ tools/
 | **构建执行器** | `ninja --version` | `1.10.2` 或更高版本 |
 | **Python** | `python --version` | `Python 3.8.x` 或更高版本 |
 | **Kconfiglib** | `python -c "import kconfiglib; print('OK')"` | 终端打印 `OK` |
-| **烧录工具** | `openocd -v` | `Open On-Chip Debugger 0.11+` |
+| **烧录工具** | `scripts\flash.bat` 或 `JLink.exe` | SEGGER J-Link Commander 正常启动并识别 |
 
 ---
 

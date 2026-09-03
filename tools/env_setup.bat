@@ -27,5 +27,13 @@ if exist "%TOOLS_ROOT%openocd\bin" (
     echo [OK] Added openocd\bin to PATH
 )
 
+if exist "C:\Program Files\SEGGER\JLink" (
+    set "PATH=C:\Program Files\SEGGER\JLink;%PATH%"
+    echo [OK] Added SEGGER J-Link to PATH
+) else if exist "C:\Program Files (x86)\SEGGER\JLink" (
+    set "PATH=C:\Program Files (x86)\SEGGER\JLink;%PATH%"
+    echo [OK] Added SEGGER J-Link to PATH
+)
+
 echo.
-echo [INFO] Environment ready. You can now run 'arm-none-eabi-gcc -v', 'cmake', 'ninja', 'make'.
+echo [INFO] Environment ready. You can now run 'arm-none-eabi-gcc -v', 'cmake', 'ninja', 'JLink.exe'.

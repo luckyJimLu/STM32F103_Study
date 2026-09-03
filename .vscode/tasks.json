@@ -27,7 +27,7 @@
       "label": "Flash active configuration",
       "type": "shell",
       "command": "${workspaceFolder}\\scripts\\flash.bat",
-      "args": ["configured-debug"],
+      "args": ["configured-debug", "STM32F103ZE"],
       "dependsOn": "Build active menuconfig",
       "problemMatcher": []
     },

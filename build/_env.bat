@@ -23,4 +23,9 @@ if not exist "%ARM_GCC_EXE%" (
 )
 
 set "PATH=%TOOLS_ROOT%\cmake\bin;%TOOLS_ROOT%\ninja;%TOOLS_ROOT%\toolchain\bin;%PATH%"
+if exist "C:\Program Files\SEGGER\JLink" (
+    set "PATH=C:\Program Files\SEGGER\JLink;%PATH%"
+) else if exist "C:\Program Files (x86)\SEGGER\JLink" (
+    set "PATH=C:\Program Files (x86)\SEGGER\JLink;%PATH%"
+)
 exit /b 0

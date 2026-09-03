@@ -19,7 +19,7 @@
 5. [SOP-05：RTOS 实时操作系统实战开发与多任务切换](#sop-05rtos-实时操作系统实战开发与多任务切换)
 6. [SOP-06：三方开源库 (LwIP/cJSON/RTT) 引入与调用](#sop-06三方开源库-lwipcjsonrtt-引入与调用)
 7. [SOP-07：极速编译构建与固件体积分析](#sop-07极速编译构建与固件体积分析)
-8. [SOP-08：硬件烧录、OpenOCD 在线仿真与排错](#sop-08硬件烧录openocd-在线仿真与排错)
+8. [SOP-08：硬件烧录、J-Link 在线仿真与排错](#sop-08硬件烧录j-link-在线仿真与排错)
 9. [SOP-09：代码格式化与版本提交规范](#sop-09代码格式化与版本提交规范)
 
 ---
@@ -256,30 +256,64 @@ make clean
 
 ---
 
-## SOP-08：硬件烧录、OpenOCD 在线仿真与排错
+## SOP-08：硬件烧录、J-Link 在线仿真与排错
 
-### 1. 硬件连接 (SWD 4 线制)
-- `3.3V` <---> `VDD`
-- `SWDIO` <---> `PA13`
-- `SWCLK` <---> `PA14`
-- `GND` <---> `GND`
+### 1. 硬件连接 (J-Link SWD 模式)
+J-Link 与 STM32F103 推荐采用 SWD 4 线制连接（必要时接入复位线）：
+
+| J-Link 20Pin 引脚 | STM32F103 目标板引脚 | 作用说明 |
+| :--- | :--- | :--- |
+| **Pin 1 (VTref)** | **3.3V / VDD** | **核心关键**：目标板参考电平检测，J-Link 须据此开启电平转换缓冲 |
+| **Pin 7 (SWDIO)** | **PA13** | SWD 串行数据输入/输出 |
+| **Pin 9 (SWCLK)** | **PA14** | SWD 串行时钟信号 |
+| **Pin 4/6/8/20 (GND)** | **GND** | 信号参考地 |
+| *(可选) Pin 15 (RESET)* | **NRST** | 硬件复位引脚（芯片休眠或 SWD 误关闭时强行复位） |
+
+> [!IMPORTANT]
+> **关于 OpenOCD 与 ST-Link 说明**：
+> 本工程原生适配 **SEGGER J-Link**。您**完全不需要安装 OpenOCD** 或 ST-Link 驱动！
+> 烧录脚本 `scripts/flash.bat` 直接驱动官方 `JLink.exe`，下载速率更快、校验严谨且无弹窗卡死问题。
 
 ### 2. 一键烧录指令
+烧录脚本会自动匹配固件（HEX 优先），并根据预设名称自动推断目标芯片型号（如 `STM32F103ZE` 或 `STM32F103C8`）：
+
 ```bash
-# Windows（参数必须与已构建固件一致）
+# Windows: 烧录指定预设构建产物
+scripts\flash.bat atk-elite-baremetal-debug
 scripts\flash.bat bluepill-baremetal-debug
 
-# Linux / macOS
-./scripts/flash.sh bluepill-baremetal-debug
+# Windows: 烧录当前 menuconfig 激活的配置
+scripts\flash.bat configured-debug
 
-# 或通过 Make
-make PRESET=bluepill-baremetal-debug flash
+# Windows: 显式指定芯片型号（可选）
+scripts\flash.bat configured-debug STM32F103ZE
+
+# Linux / macOS
+./scripts/flash.sh atk-elite-baremetal-debug
+
+# 或通过 Make 便捷调用
+make PRESET=atk-elite-baremetal-debug flash
 ```
 
 ### 3. VS Code 在线断点仿真
-1. 安装 VS Code 插件：`Cortex-Debug` 与 `C/C++`。
-2. 确保目标固件已编译（例如 `build/out/bluepill-baremetal-debug/STM32F103_Study.elf`）。
-3. 按键盘 **`F5`** 启动调试，支持图形化断点、单步执行（F10/F11）、变量监视与外设寄存器查看。
+本工程 `.vscode/launch.json` 已原生配置为 J-Link GDB Server：
+1. 确保安装 VS Code 插件：`Cortex-Debug` 与 `C/C++`。
+2. 确保已编译生成目标 ELF 固件（如点击状态栏 Build 或运行任务 `Build active menuconfig`）。
+3. 切换至 VS Code **运行与调试**面板（`Ctrl+Shift+D`），根据板卡选择配置：
+   - `Debug active config as ALIENTEK F103ZE (J-Link)`
+   - `Debug active config as BluePill C8 (J-Link)`
+4. 按键盘 **`F5`** 启动调试，支持源码级图形化断点、单步执行（F10/F11）、调用栈、变量监视与外设寄存器实时观测。
+
+### 4. J-Link 常见排错指南
+- **错误：Cannot connect to J-Link**：
+  - 检查 J-Link USB 数据线是否插牢，驱动是否由 SEGGER 正常识别（设备管理器中显示 `J-Link driver`）。
+- **错误：Cannot connect to target / VTref=0.000V**：
+  - 检查目标板是否已独立供电（开发板电源开关/指示灯是否点亮）。
+  - 检查 J-Link Pin 1 (VTref) 是否连接到目标板的 3.3V 引脚。若 VTref 为 0V，J-Link 将拒绝驱动 SWD 总线。
+- **错误：Device STM32F103xx halted but cannot erase/program (Flash locked)**：
+  - 若芯片开启了读保护 (RDP)，可使用 J-Link Commander 手动输入 `unlock` 解锁芯片（注意：会全盘擦除 Flash）。
+- **下载后芯片不运行**：
+  - 脚本已自动执行 `r` (复位) 与 `g` (运行)。若使用了某些特殊硬件复位电路，可轻按板载 RESET 按键一次。
 
 ---
 
@@ -295,4 +329,4 @@ make PRESET=bluepill-baremetal-debug flash
 - `fix:` 修复 Bug（如 `fix(usart): fix baudrate clock division error`）
 - `docs:` 知识库与文档更新（如 `docs: update freertos porting manual`）
 - `refactor:` 架构重构（如 `refactor(kconfig): optimize third_party options`）
-- `tools:` 工具链与构建脚本变更（如 `tools: update openocd flash script`）
+- `tools:` 工具链与构建脚本变更（如 `tools: update jlink flash script`）

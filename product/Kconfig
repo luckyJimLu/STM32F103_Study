@@ -2,7 +2,7 @@ menu "Product Board Selection"
 
 choice
     prompt "Target product"
-    default PRODUCT_BLUEPILL_F103C8
+    default PRODUCT_ATK_ELITE_F103ZE
 
 config PRODUCT_BLUEPILL_F103C8
     bool "BluePill STM32F103C8T6"

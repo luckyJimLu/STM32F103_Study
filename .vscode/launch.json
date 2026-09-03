@@ -2,26 +2,15 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Debug active config as BluePill C8",
+      "name": "Debug ALIENTEK STM32F103ZE (J-Link SWD)",
       "cwd": "${workspaceFolder}",
       "executable": "${workspaceFolder}/build/out/configured-debug/STM32F103_Study.elf",
       "request": "launch",
       "type": "cortex-debug",
-      "servertype": "openocd",
-      "device": "STM32F103C8",
-      "configFiles": ["${workspaceFolder}/scripts/openocd_stlink.cfg"],
-      "runToEntryPoint": "main",
-      "preLaunchTask": "Build active menuconfig"
-    },
-    {
-      "name": "Debug active config as ALIENTEK F103ZE",
-      "cwd": "${workspaceFolder}",
-      "executable": "${workspaceFolder}/build/out/configured-debug/STM32F103_Study.elf",
-      "request": "launch",
-      "type": "cortex-debug",
-      "servertype": "openocd",
+      "servertype": "jlink",
       "device": "STM32F103ZE",
-      "configFiles": ["${workspaceFolder}/scripts/openocd_stlink.cfg"],
+      "interface": "swd",
+      "gdbPath": "${workspaceFolder}/tools/toolchain/bin/arm-none-eabi-gdb.exe",
       "runToEntryPoint": "main",
       "preLaunchTask": "Build active menuconfig"
     }
