@@ -11,6 +11,11 @@ void HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *GPIO_Init)
 {
   uint32_t pinpos = 0x00U, pos = 0x00U, currentpin = 0x00U;
 
+  if (GPIOx == NULL || GPIO_Init == NULL)
+  {
+    return;
+  }
+
   for (pinpos = 0x00U; pinpos < 16U; pinpos++)
   {
     pos = ((uint32_t)0x01U) << pinpos;
@@ -95,6 +100,10 @@ void HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *GPIO_Init)
 
 GPIO_PinState HAL_GPIO_ReadPin(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin)
 {
+  if (GPIOx == NULL)
+  {
+    return GPIO_PIN_RESET;
+  }
   if ((GPIOx->IDR & GPIO_Pin) != 0U)
   {
     return GPIO_PIN_SET;
@@ -104,6 +113,10 @@ GPIO_PinState HAL_GPIO_ReadPin(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin)
 
 void HAL_GPIO_WritePin(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, GPIO_PinState PinState)
 {
+  if (GPIOx == NULL)
+  {
+    return;
+  }
   if (PinState != GPIO_PIN_RESET)
   {
     GPIOx->BSRR = (uint32_t)GPIO_Pin;
@@ -116,6 +129,10 @@ void HAL_GPIO_WritePin(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, GPIO_PinState Pin
 
 void HAL_GPIO_TogglePin(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin)
 {
+  if (GPIOx == NULL)
+  {
+    return;
+  }
   uint32_t odr = GPIOx->ODR;
   GPIOx->BSRR = ((odr & GPIO_Pin) << 16U) | (~odr & GPIO_Pin);
 }

@@ -48,7 +48,7 @@ void vApplicationMallocFailedHook(void)
 void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName)
 {
     (void)xTask;
-#if defined(CONFIG_LOG_ENABLE)
+#if defined(CONFIG_LOG_ENABLE) && (CONFIG_LOG_ENABLE != 0)
     LOG_FATAL("FREERTOS", "stack overflow task=%s",
               pcTaskName != NULL ? pcTaskName : "unknown");
 #else

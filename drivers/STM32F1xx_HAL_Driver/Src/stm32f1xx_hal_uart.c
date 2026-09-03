@@ -32,7 +32,7 @@ HAL_StatusTypeDef HAL_UART_Init(UART_HandleTypeDef *huart)
 
 HAL_StatusTypeDef HAL_UART_Transmit(UART_HandleTypeDef *huart, const uint8_t *pData, uint16_t Size, uint32_t Timeout)
 {
-  if (huart == NULL || pData == NULL || Size == 0)
+  if (huart == NULL || huart->Instance == NULL || pData == NULL || Size == 0)
   {
     return HAL_ERROR;
   }
@@ -59,7 +59,7 @@ HAL_StatusTypeDef HAL_UART_Transmit(UART_HandleTypeDef *huart, const uint8_t *pD
 
 HAL_StatusTypeDef HAL_UART_Receive(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size, uint32_t Timeout)
 {
-  if (huart == NULL || pData == NULL || Size == 0)
+  if (huart == NULL || huart->Instance == NULL || pData == NULL || Size == 0)
   {
     return HAL_ERROR;
   }

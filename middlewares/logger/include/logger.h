@@ -26,7 +26,7 @@ void Logger_Write(Logger_LevelTypeDef level,
                   const char *format,
                   ...);
 
-#if defined(CONFIG_LOG_ENABLE)
+#if defined(CONFIG_LOG_ENABLE) && (CONFIG_LOG_ENABLE != 0)
 #define LOG_FATAL(tag, format, ...) \
     Logger_Write(LOGGER_LEVEL_FATAL, tag, format, ##__VA_ARGS__)
 #define LOG_ERROR(tag, format, ...) \

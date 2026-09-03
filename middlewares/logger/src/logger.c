@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdio.h>
 
-#if defined(CONFIG_LOG_ENABLE)
+#if defined(CONFIG_LOG_ENABLE) && (CONFIG_LOG_ENABLE != 0)
 static Logger_OutputFunction s_output;
 static Logger_TimestampFunction s_timestamp;
 static bool s_initialized;
@@ -25,7 +25,7 @@ static const char *logger_level_name(Logger_LevelTypeDef level)
 void Logger_Init(Logger_OutputFunction output,
                  Logger_TimestampFunction timestamp)
 {
-#if defined(CONFIG_LOG_ENABLE)
+#if defined(CONFIG_LOG_ENABLE) && (CONFIG_LOG_ENABLE != 0)
     s_output = output;
     s_timestamp = timestamp;
     s_initialized = output != NULL;
@@ -37,7 +37,7 @@ void Logger_Init(Logger_OutputFunction output,
 
 bool Logger_IsInitialized(void)
 {
-#if defined(CONFIG_LOG_ENABLE)
+#if defined(CONFIG_LOG_ENABLE) && (CONFIG_LOG_ENABLE != 0)
     return s_initialized;
 #else
     return false;
@@ -49,7 +49,7 @@ void Logger_Write(Logger_LevelTypeDef level,
                   const char *format,
                   ...)
 {
-#if defined(CONFIG_LOG_ENABLE)
+#if defined(CONFIG_LOG_ENABLE) && (CONFIG_LOG_ENABLE != 0)
     char line[CONFIG_LOG_BUFFER_SIZE];
     size_t used;
     int result;

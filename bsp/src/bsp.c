@@ -4,7 +4,7 @@
 #include "product_config.h"
 #include "system_mode.h"
 
-#if defined(CONFIG_LOG_ENABLE)
+#if defined(CONFIG_LOG_ENABLE) && (CONFIG_LOG_ENABLE != 0)
 static void bsp_log_output(const char *data, uint16_t length)
 {
     BSP_USART1_SendBuffer(data, length);
@@ -42,7 +42,7 @@ static const char *bsp_reset_reason(uint32_t reset_flags)
 
 HAL_StatusTypeDef BSP_Init(void)
 {
-#if defined(CONFIG_LOG_ENABLE)
+#if defined(CONFIG_LOG_ENABLE) && (CONFIG_LOG_ENABLE != 0)
     const uint32_t reset_flags = RCC->CSR;
 #endif
 
@@ -70,7 +70,7 @@ HAL_StatusTypeDef BSP_Init(void)
     {
         return HAL_ERROR;
     }
-#if defined(CONFIG_LOG_ENABLE)
+#if defined(CONFIG_LOG_ENABLE) && (CONFIG_LOG_ENABLE != 0)
     Logger_Init(bsp_log_output, HAL_GetTick);
     LOG_INFO("BOOT", "reset=%s flags=0x%08lX",
              bsp_reset_reason(reset_flags),
@@ -105,7 +105,7 @@ HAL_StatusTypeDef BSP_Init(void)
 
 void BSP_FatalError(const char *reason)
 {
-#if defined(CONFIG_LOG_ENABLE)
+#if defined(CONFIG_LOG_ENABLE) && (CONFIG_LOG_ENABLE != 0)
     LOG_FATAL("SYSTEM", "%s", reason != NULL ? reason : "unknown error");
 #else
     (void)reason;

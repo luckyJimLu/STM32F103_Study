@@ -10,14 +10,58 @@
 
 ---
 
+## 标准作业主流程
+
+从需求到合入的完整路径。配置、构建、烧录三条主线在 SOP-07 与 SOP-08 汇合。
+
+```mermaid
+flowchart TD
+    REQ["需求：新产品 / 新外设 / 新功能 / 新组件"] --> ENV{{"SOP-01<br/>环境与工具链就绪？"}}
+    ENV -->|否| ENVDO["放置 cmake / ninja / toolchain<br/>验证 arm-none-eabi-gcc -v"]
+    ENV -->|是| CFG
+    ENVDO --> CFG
+
+    CFG["SOP-02<br/>menuconfig 选择产品 + 系统 + 功能"] --> SAVE{"是否要固化？"}
+    SAVE -->|"本地调试"| DOT["保存 .config<br/>构建 configured-debug"]
+    SAVE -->|"回归/发布"| DEF["更新 product/*/configs/*_defconfig"]
+
+    CFG --> HW{"涉及新引脚/时钟？"}
+    HW -->|是| MX["SOP-03<br/>CubeMX 生成 → 临时目录审查 → 按层迁入"]
+    HW -->|否| KIND
+    MX --> KIND
+
+    KIND{"改动类型"}
+    KIND -->|"新外设/驱动"| BSP["SOP-04 四步法<br/>源码 → Kconfig → CMake → 矩阵"]
+    KIND -->|"RTOS 行为"| RTOS["SOP-05<br/>非阻塞状态机 / platform 端口"]
+    KIND -->|"三方组件"| TP["SOP-06<br/>固定版本 + 许可证 + 端口 + 验证"]
+
+    BSP --> BUILD["SOP-07<br/>构建 + 体积分析"]
+    RTOS --> BUILD
+    TP --> BUILD
+    DOT --> BUILD
+    DEF --> BUILD
+
+    BUILD --> GATE{"链接后校验通过？"}
+    GATE -->|否| FIX["回到对应步骤修正"]
+    FIX --> BUILD
+    GATE -->|是| FLASH["SOP-08<br/>J-Link 烧录 → 串口/GDB 验证"]
+    FLASH --> HWOK{"板上行为符合预期？"}
+    HWOK -->|否| FIX
+    HWOK -->|是| FMT["SOP-09<br/>格式化 + Conventional Commits"]
+    FMT --> DONE(["合入"])
+```
+
+---
+
 ## 📋 目录索引
 
+0. [标准作业主流程](#标准作业主流程)
 1. [SOP-01：开发环境初始化与工具链准备](#sop-01开发环境初始化与工具链准备)
 2. [SOP-02：Kconfig 可视化裁剪与功能配置](#sop-02kconfig-可视化裁剪与功能配置)
 3. [SOP-03：STM32CubeMX 硬件引脚配置与代码同步](#sop-03stm32cubemx-硬件引脚配置与代码同步)
 4. [SOP-04：新增外设模块与 BSP 驱动开发规范](#sop-04新增外设模块与-bsp-驱动开发规范)
 5. [SOP-05：RTOS 实时操作系统实战开发与多任务切换](#sop-05rtos-实时操作系统实战开发与多任务切换)
-6. [SOP-06：三方开源库 (LwIP/cJSON/RTT) 引入与调用](#sop-06三方开源库-lwipcjsonrtt-引入与调用)
+6. [SOP-06：第三方开源库 (LwIP/cJSON/RTT) 引入与调用](#sop-06第三方开源库-lwipcjsonrtt-引入与调用)
 7. [SOP-07：极速编译构建与固件体积分析](#sop-07极速编译构建与固件体积分析)
 8. [SOP-08：硬件烧录、J-Link 在线仿真与排错](#sop-08硬件烧录j-link-在线仿真与排错)
 9. [SOP-09：代码格式化与版本提交规范](#sop-09代码格式化与版本提交规范)
@@ -209,7 +253,7 @@ void App_Process(uint32_t now_ms)
 
 ---
 
-## SOP-06：第三方开源库引入与调用
+## SOP-06：第三方开源库 (LwIP/cJSON/RTT) 引入与调用
 
 ### 目的
 规范将完整、可追溯的第三方组件接入 `third_party/`。当前目录中的现有组件均为

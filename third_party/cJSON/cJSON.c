@@ -112,14 +112,28 @@ char *cJSON_PrintUnformatted(const cJSON *item)
 
 void cJSON_AddItemToObject(cJSON *object, const char *string, cJSON *item)
 {
+    char *key = NULL;
+
     if (object == NULL || item == NULL) return;
+
+    /* Allocate the replacement key before mutating the item.  If the heap is
+       exhausted, leave the item untouched instead of inserting a nameless
+       member or losing its existing key. */
+    if (string != NULL)
+    {
+        key = strdup(string);
+        if (key == NULL)
+        {
+            return;
+        }
+    }
 
     /* Free previously allocated key name to prevent memory leak */
     if (item->string != NULL)
     {
         free(item->string);
     }
-    item->string = (string != NULL) ? strdup(string) : NULL;
+    item->string = key;
 
     /* Ensure item's list pointers are clean before insertion */
     item->next = NULL;
