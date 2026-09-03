@@ -88,10 +88,10 @@ python scripts\menuconfig.py
 Windows 仓库内置 CMake、Ninja 和 GNU Arm Toolchain：
 
 ```bat
-REM 使用当前 .config；没有 .config 时默认 正点原子精英板 F103ZE + 裸机
+REM 交互式选择 Board、System 和 Build Version（英文数字菜单）
 build\build.bat
 
-REM 构建一个固定组合
+REM 也可直接构建一个固定组合，适合自动化调用
 build\build.bat bluepill-rtthread-debug
 build\build.bat atk-elite-freertos-release
 
@@ -115,7 +115,7 @@ ELF、HEX、BIN 和 MAP 输出到 `build/out/<preset>/`。
 本项目默认使用 **SEGGER J-Link** 进行固件烧录与在线调试（**无需安装 OpenOCD 或 ST-Link**）：
 
 ```bat
-REM 默认构建并烧录 正点原子精英板 F103ZE 裸机固件
+REM 分别从英文数字菜单选择同一个 Board、System 和 Build Version
 build\build.bat
 scripts\flash.bat
 

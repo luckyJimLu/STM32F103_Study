@@ -7,7 +7,10 @@ REM ============================================================================
 for %%I in ("%~dp0..") do set "PROJECT_ROOT=%%~fI"
 
 set "PRESET=%~1"
-if not defined PRESET set "PRESET=configured-debug"
+if not defined PRESET (
+    call "%PROJECT_ROOT%\scripts\select_preset.bat" PRESET
+    if errorlevel 1 exit /b 1
+)
 
 set "TARGET_DEVICE=%~2"
 if defined JLINK_DEVICE if not defined TARGET_DEVICE set "TARGET_DEVICE=%JLINK_DEVICE%"

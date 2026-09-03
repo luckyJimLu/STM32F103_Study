@@ -5,7 +5,10 @@ call "%~dp0_env.bat"
 if errorlevel 1 exit /b 1
 
 set "PRESET=%~1"
-if not defined PRESET set "PRESET=configured-debug"
+if not defined PRESET (
+    call "%PROJECT_ROOT%\scripts\select_preset.bat" PRESET
+    if errorlevel 1 exit /b 1
+)
 
 if /i "%PRESET%"=="all" (
     python "%PROJECT_ROOT%\scripts\build_matrix.py"

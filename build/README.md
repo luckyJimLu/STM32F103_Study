@@ -8,7 +8,8 @@
 | 脚本 | 用法 | 说明 |
 | --- | --- | --- |
 | `_env.bat` | 由其他脚本调用 | 定位仓库内 CMake/Ninja，设置 `PROJECT_ROOT` |
-| `build.bat [preset]` | `build\build.bat atk-elite-freertos-release` | 配置并构建；缺省 `configured-debug` |
+| `build.bat` | `build\build.bat` | 用英文数字菜单依次选择 Board、System 和 Build Version 后构建 |
+| `build.bat <preset>` | `build\build.bat atk-elite-freertos-release` | 直接配置并构建指定 preset，供自动化调用 |
 | `build.bat all` | `build\build.bat all` | 执行 `scripts/build_matrix.py`，构建 12 个固定组合 |
 | `clean.bat [preset]` | `build\clean.bat bluepill-baremetal-debug` | 删除一个构建目录；缺省或 `all` 删除整个 `build/out` |
 

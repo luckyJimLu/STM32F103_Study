@@ -4,8 +4,67 @@
 # ==============================================================================
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PRESET="${1:-configured-debug}"
+PRESET="${1:-}"
 TARGET_DEVICE="${2:-${JLINK_DEVICE}}"
+
+select_preset() {
+    local choice
+    local board
+    local system
+    local build_version
+
+    echo ""
+    echo "Select Board:"
+    echo "  1. BluePill (STM32F103C8T6)"
+    echo "  2. ALIENTEK Elite (STM32F103ZET6)"
+    while true; do
+        read -r -p "Enter board number [1-2]: " choice || return 1
+        case "$choice" in
+            1) board="bluepill"; break ;;
+            2) board="atk-elite"; break ;;
+            *) echo "[ERROR] Invalid board number. Enter 1 or 2." ;;
+        esac
+    done
+
+    echo ""
+    echo "Select System:"
+    echo "  1. Bare Metal"
+    echo "  2. RT-Thread"
+    echo "  3. FreeRTOS"
+    while true; do
+        read -r -p "Enter system number [1-3]: " choice || return 1
+        case "$choice" in
+            1) system="baremetal"; break ;;
+            2) system="rtthread"; break ;;
+            3) system="freertos"; break ;;
+            *) echo "[ERROR] Invalid system number. Enter 1, 2, or 3." ;;
+        esac
+    done
+
+    echo ""
+    echo "Select Build Version:"
+    echo "  1. Debug"
+    echo "  2. Release"
+    while true; do
+        read -r -p "Enter build version number [1-2]: " choice || return 1
+        case "$choice" in
+            1) build_version="debug"; break ;;
+            2) build_version="release"; break ;;
+            *) echo "[ERROR] Invalid build version number. Enter 1 or 2." ;;
+        esac
+    done
+
+    PRESET="$board-$system-$build_version"
+    echo ""
+    echo "[INFO] Selected preset: $PRESET"
+}
+
+if [ -z "$PRESET" ]; then
+    if ! select_preset; then
+        echo "[ERROR] Input was cancelled."
+        exit 1
+    fi
+fi
 
 OUT_DIR="$PROJECT_ROOT/build/out/$PRESET"
 HEX_FILE="$OUT_DIR/STM32F103_Study.hex"
