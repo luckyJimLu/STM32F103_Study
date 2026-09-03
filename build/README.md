@@ -12,3 +12,6 @@
 
 `configured-debug` 读取根目录本地 `.config`；当它不存在时使用 BluePill 裸机
 defconfig。生成配置和固件全部位于 `build/out/<preset>/`。
+
+产品配置职责见 [product/README](../product/README.md)，完整命令与发布检查见
+[CMake + Ninja 构建指南](../docs/porting_guides/01_cmake_ninja_setup.md)。

@@ -6,3 +6,6 @@
 
 当前工程使用静态应用线程，不启用动态 heap 或 FinSH；menuconfig 只展示已经
 接入实现的 tick、优先级、线程栈和时间片参数。
+
+当前端口职责、扩展规则和验收方法见
+[RT-Thread Nano 当前端口与扩展指南](../../../docs/porting_guides/02_rt_thread_nano_porting.md)。

@@ -30,7 +30,8 @@ CMSIS → compact HAL → BSP → application
 - `middlewares/rtos/`：保持当前版本的 RT-Thread Nano 和 FreeRTOS。
 - `third_party/`：未完成的参考占位，当前不参与配置或构建。
 
-更完整的设计约束见 [架构说明](docs/architecture.md)。
+更完整的设计约束见 [架构说明](docs/architecture.md)，全部文档入口见
+[项目文档导航](docs/README.md)。
 
 ## 配置
 

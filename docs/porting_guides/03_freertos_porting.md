@@ -1,10 +1,46 @@
-# 03 - FreeRTOS 移植标准作业程序 (SOP)
+# 03 - FreeRTOS 当前端口与历史移植参考
 
 > 本文档基于《STM32F1 FreeRTOS 开发手册 V1.1（ALIENTEK STM32F103 开发教程）》系统化整理，系统总结了在 STM32F103 全系列（Cortex-M3）平台上进行 FreeRTOS 移植、配置、中断管理与多任务验证的完整规范。
-> 
-> 本文档同步存档于 [`doc/SOP_freertos_porting_guide.md`](../../doc/SOP_freertos_porting_guide.md)。
+>
+> “当前工程集成”一节是本仓库的操作规范；后续长篇内容保留为旧版教程的原理
+> 参考，其中的 MDK、标准库、`SYSTEM_SUPPORT_OS`、`delay.c` 和独立 `main()`
+> 结构不能直接套用到当前工程。
+
+## 当前工程集成
+
+当前工程已集成 FreeRTOS V10.4.4+/V202112.00 快照，构建入口为：
+
+```bash
+cmake --preset bluepill-freertos-debug
+cmake --build --preset bluepill-freertos-debug
+
+cmake --preset atk-elite-freertos-debug
+cmake --build --preset atk-elite-freertos-debug
+```
+
+实现边界如下：
+
+- `platform/src/main.c` 提供唯一 `main()`；
+- `platform/src/system_runtime_freertos.c` 完成 BSP 初始化、创建 `app` 任务并启动
+  调度器；
+- `middlewares/rtos/freertos/` 保存内核、GCC Cortex-M3 端口和当前
+  `FreeRTOSConfig.h`；
+- `app/src/app_task.c` 只实现 `App_Init()` 与非阻塞 `App_Process(now_ms)`，不得
+  包含 FreeRTOS 头文件或自行启动调度器；
+- SysTick 由 FreeRTOS Cortex-M3 端口接管，HAL tick 通过端口钩子保持毫秒语义，
+  BSP 和应用不得重复定义 `SysTick_Handler`。
+
+任务栈和优先级通过 Kconfig 的 `CONFIG_FREERTOS_*` 参数控制。新增仅 FreeRTOS
+可用的队列、任务或同步适配应放在 `platform`，向应用提供内核无关接口。修改后
+至少构建两个产品的 FreeRTOS Debug/Release，并用完整矩阵检查没有混入
+RT-Thread 符号。
+
+根目录的 [FreeRTOS SOP 入口](../SOP_freertos_porting_guide.md) 只链接到本页，
+避免维护两份内容。
 
 ---
+
+## 历史教程内容（不可直接用于当前工程）
 
 ## 目录
 - [一、 移植前准备工作](#一-移植前准备工作)

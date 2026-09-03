@@ -1,9 +1,12 @@
 # STM32F103 模块化嵌入式开发标准作业程序 (SOP)
 
-> **文档版本**：V1.0  
-> **适用对象**：嵌入式软件工程师、固件开发工程师、硬件调试工程师  
-> **适用平台**：STM32F103 系列（C8T6 / ZET6 等）  
-> **工程体系**：CMake + Ninja / GNU Make + Kconfig 可视化裁剪 + 分层驱动架构
+> **文档版本**：V2.0（product/platform 三系统架构）
+>
+> **适用对象**：嵌入式软件工程师、固件开发工程师、硬件调试工程师
+>
+> **适用平台**：STM32F103 系列（C8T6 / ZET6 等）
+>
+> **工程体系**：CMake + Ninja 单一构建定义 + Kconfig 可视化裁剪 + 产品/运行时分层
 
 ---
 
@@ -29,6 +32,8 @@
 ### 前置条件
 - 操作系统：Windows 10/11 64-bit、Linux 或 macOS。
 - 已安装 Python 3.8+ 及 Git。
+- 当前入库工具和 preset 已在 Windows 验证；Linux/macOS 需要提供对应平台的
+  CMake、Ninja、GNU Arm 工具链并维护本地 user preset。
 
 ### 操作步骤
 
@@ -87,6 +92,11 @@ graph LR
    - 键盘操作：按 `S` 保存为 `.config`，按 `Q` 退出。
    - `.config` 只保存本地选择；CMake 在每个 `build/out/<preset>/generated/`
      独立生成 `autoconf.h` 和 `kconfig.cmake`。
+4. **固定配置规则**：
+   - `.config` 只供本地 `configured-debug` 使用，不提交版本库。
+   - 可复现配置必须更新到 `product/<board>/configs/<system>_defconfig`。
+   - 产品选择同时决定 MCU、容量、启动文件、链接脚本参数和板载资源，不能再单独
+     选择不匹配的芯片。
 
 ---
 
@@ -106,15 +116,20 @@ graph LR
    - 勾选 **`Generate peripheral initialization as a pair of '.c/.h' files per peripheral`**。
    - 勾选 **`Keep User Code when re-generating`**。
 4. **代码放置归属**：
-   - 生成的 `Drivers/STM32F1xx_HAL_Driver` -> 覆盖 `drivers/STM32F1xx_HAL_Driver/`。
-   - 生成的 `gpio.c/h`, `usart.c/h` -> 提取核心硬件配置函数至 `bsp/` 对应驱动模块中调用。
+   - 生成代码先放在仓库外临时目录，禁止直接覆盖 `drivers/`、`platform/` 或
+     `product/`。
+   - 时钟、引脚和产品能力迁入 `product/*/include/product_config.h`；外设初始化
+     提取到 `bsp/`；中断和系统专用胶水放到 `platform/`。
+   - CMSIS/HAL 只能按可追溯的完整上游版本升级并保留许可证，不能从单次生成结果
+     零散覆盖。
 
 ---
 
 ## SOP-04：新增外设模块与 BSP 驱动开发规范
 
 ### 目的
-规范新增硬件外设（如 SPI Flash、I2C OLED、定时器等）的目录组织与多构建系统注册流程。
+规范新增硬件外设（如 SPI Flash、I2C OLED、定时器等）的产品能力、Kconfig 和
+CMake 单一注册流程。
 
 ### 开发四步法
 
@@ -145,12 +160,13 @@ bsp_oled.c/h  -->   bsp/Kconfig     -->   bsp/CMakeLists.txt  -->  make matrix
    #include "bsp_oled.h"
    #endif
 
-   void BSP_Init(void)
+   HAL_StatusTypeDef BSP_Init(void)
    {
        /* ... */
        #if defined(CONFIG_BSP_USING_OLED)
        BSP_OLED_Init();
        #endif
+       return HAL_OK;
    }
    ```
 
@@ -161,53 +177,35 @@ bsp_oled.c/h  -->   bsp/Kconfig     -->   bsp/CMakeLists.txt  -->  make matrix
 ### 目的
 规范裸机与实时操作系统的开发模式，确保任务创建、调度器启动与中断处理安全。
 
-### 1. RT-Thread Nano 实战模式
-- **切换方式**：`make menuconfig` -> `RTOS Mode` -> 选择 `RT-Thread Nano`。
-- **线程创建规范**：
-  ```c
-  #include <rtthread.h>
-  static struct rt_thread led_thread;
-  static rt_uint8_t led_stack[512];
+### 1. 共享应用规范
 
-  static void led_thread_entry(void *parameter)
-  {
-      while (1)
-      {
-          BSP_LED_Toggle();
-          rt_thread_mdelay(500);
-      }
-  }
+应用只实现 `App_Init()` 和非阻塞的 `App_Process(uint32_t now_ms)`。LED、按键和
+协议状态机使用传入的毫秒时间推进，不调用 `HAL_Delay()`、`rt_thread_mdelay()`
+或 `vTaskDelay()`，也不包含任一 RTOS 头文件。
 
-  void App_Init(void)
-  {
-      rt_thread_init(&led_thread, "led", led_thread_entry, RT_NULL,
-                     &led_stack[0], sizeof(led_stack), 20, 10);
-      rt_thread_startup(&led_thread);
-  }
-  ```
+```c
+void App_Process(uint32_t now_ms)
+{
+    if (time_reached(now_ms, next_deadline_ms))
+    {
+        BSP_LED_Toggle();
+        next_deadline_ms += interval_ms;
+    }
+}
+```
 
-### 2. FreeRTOS 实战模式
-- **切换方式**：`make menuconfig` -> `RTOS Mode` -> 选择 `FreeRTOS`。
-- **任务创建与调度规范**：
-  ```c
-  #include "FreeRTOS.h"
-  #include "task.h"
+### 2. 系统运行时规范
 
-  void vLedTask(void *pvParameters)
-  {
-      while (1)
-      {
-          BSP_LED_Toggle();
-          vTaskDelay(pdMS_TO_TICKS(500));
-      }
-  }
+- `platform/src/main.c` 是唯一入口，只调用 `SystemRuntime_Start()`。
+- 裸机端口在 super-loop 中调用 `App_Process()`；RT-Thread 和 FreeRTOS 端口各自
+  创建一个应用线程/任务，并负责休眠和启动调度器。
+- RTOS 专用任务、队列和同步适配只能放在 `platform`，通过内核无关接口提供给
+  应用。
+- 三个端口分别拥有唯一 SysTick 实现，BSP 和应用不得定义或重配 SysTick。
+- 线程/任务参数来自 Kconfig，创建或调度失败必须进入 `BSP_FatalError()`。
 
-  void App_Init(void)
-  {
-      xTaskCreate(vLedTask, "LED_Task", 128, NULL, 2, NULL);
-      vTaskStartScheduler();
-  }
-  ```
+详细实现分别见 [RT-Thread 端口](porting_guides/02_rt_thread_nano_porting.md) 和
+[FreeRTOS 端口](porting_guides/03_freertos_porting.md)。
 
 ---
 
@@ -218,13 +216,9 @@ bsp_oled.c/h  -->   bsp/Kconfig     -->   bsp/CMakeLists.txt  -->  make matrix
 不完整参考占位，不参与 menuconfig 或固件构建。
 
 ### 操作步骤
-1. **固定源码版本并保留许可证**：
-   ```bash
-   # LwIP
-   git clone -b STABLE-2_1_3_RELEASE https://git.savannah.nongnu.org/git/lwip.git third_party/lwip/src
-   # Letter Shell
-   git clone https://github.com/NevermindZZT/letter-shell.git third_party/letter_shell/src
-   ```
+1. **固定源码版本并保留许可证**：在仓库外获取指定 tag/commit，核对来源与许可后
+   再导入 `third_party/<component>/`。版本、补丁和许可证必须可审计，不能用浮动
+   分支或不完整头文件冒充已集成组件。
 2. **完成端口与测试**：只有具备目标平台端口、CMake 显式源码清单和构建测试后，
    才能新增 Kconfig 选项；禁止为缺失源码的目录创建可选功能。
 
@@ -232,17 +226,14 @@ bsp_oled.c/h  -->   bsp/Kconfig     -->   bsp/CMakeLists.txt  -->  make matrix
 
 ## SOP-07：极速编译构建与固件体积分析
 
-### 1. 方式一：CMake + Ninja 高速构建 (首选)
+### 1. CMake + Ninja 固定 preset（规范入口）
 ```bash
-# 生成构建目录并配置
-cmake -B build -G Ninja
-
-# 执行极速编译
-cmake --build build
-
-# 或使用 CMakePresets 预设
 cmake --preset bluepill-baremetal-debug
 cmake --build --preset bluepill-baremetal-debug
+
+# Windows 包装脚本
+build\build.bat atk-elite-freertos-release
+build\build.bat all
 ```
 
 ### 2. GNU Make 便捷包装
@@ -250,7 +241,7 @@ cmake --build --preset bluepill-baremetal-debug
 # Make 仍调用 CMake preset，不维护独立源码清单
 make PRESET=bluepill-baremetal-debug
 
-# 清理构建产物
+# 清理 build/out
 make clean
 ```
 
@@ -275,14 +266,14 @@ make clean
 
 ### 2. 一键烧录指令
 ```bash
-# Windows
-scripts\flash.bat
+# Windows（参数必须与已构建固件一致）
+scripts\flash.bat bluepill-baremetal-debug
 
 # Linux / macOS
-./scripts/flash.sh
+./scripts/flash.sh bluepill-baremetal-debug
 
 # 或通过 Make
-make flash
+make PRESET=bluepill-baremetal-debug flash
 ```
 
 ### 3. VS Code 在线断点仿真

@@ -4,13 +4,19 @@
 传统的 Keil MDK / IAR 属于专有 IDE，跨平台支持差、无法便捷接入 CI/CD，且工程文件与配置强耦合。
 使用 **CMake + Ninja + arm-none-eabi-gcc** 可以带来以下核心优势：
 1. **极速构建**：Ninja 基于 DAG 依赖图执行并行编译，秒级完成大型嵌入式工程构建。
-2. **跨平台兼容**：在 Windows、macOS、Linux 下拥有一致的构建体验。
+2. **可移植构建描述**：CMake 规则可跨平台复用；当前入库的工具二进制与 preset
+   已在 Windows 验证。
 3. **宏与模块化管理**：通过 Kconfig 和目标级 CMake 配置管理产品、RTOS 与外设组件。
 4. **易于自动化与集成**：无缝对接 VS Code、CLion 以及 GitHub Actions。
 
 ---
 
 ## 2. 工具链准备与环境安装 (Windows 环境)
+
+Windows 仓库已包含 `tools/cmake`、`tools/ninja` 和 `tools/toolchain`，正常情况下可
+直接运行 `build\build.bat`，不要求把这些工具加入系统 `PATH`。以下安装步骤主要
+用于更新仓库工具或在 Linux/macOS 上复现环境。后两者需要自行放入对应平台的
+仓库内工具链，并用 `CMakeUserPresets.json` 覆盖 Windows 专用的 Ninja 路径后验证。
 
 ### 必须工具列表
 1. **GNU Arm Embedded Toolchain (`arm-none-eabi-gcc`)**
@@ -64,3 +70,18 @@ cmake --build build
 # 3. 查看输出产物
 # 产物位于 build/STM32F103_Study.elf, .hex, .bin, .map
 ```
+
+手动 `-B build` 仅适合临时验证；日常开发使用 preset，产物位于
+`build/out/<preset>/STM32F103_Study.{elf,hex,bin,map}`，不会与其他组合互相覆盖。
+
+### 方式三：项目包装脚本
+
+```bat
+build\build.bat bluepill-baremetal-debug
+build\build.bat atk-elite-freertos-release
+build\build.bat all
+```
+
+`all` 构建两个产品、三种系统和 Debug/Release 共 12 个固定组合。每个 ELF 链接后
+都会执行容量、入口/SysTick 和 RTOS 符号互斥检查。GNU Make 只是相同 preset 的
+便捷包装，不维护第二套源码清单。

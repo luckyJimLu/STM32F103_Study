@@ -4,6 +4,10 @@
 
 正点原子精英 STM32F103 开发板的教程摘要、模块化学习笔记和引脚速查，见 [开发板资料](../board_resources/README.md)。
 
+当前固件的可执行板级配置以 `product/bluepill_f103c8/` 和
+`product/atk_elite_f103ze/` 为唯一来源。本页是硬件速查；修改引脚、有效电平、
+晶振或存储容量时，必须同步产品头、`product.cmake`、defconfig 和硬件文档。
+
 ## 目录索引
 - [原理图设计指南与引脚分配](schematics_guide.md)：最小系统电路、时钟、复位、供电与调试接口设计规范。
 - 建议归档文件：
@@ -17,7 +21,8 @@
 
 ### 1. STM32F103C8T6 (BluePill 最小系统板)
 - **主控型号**：STM32F103C8T6 (LQFP48, 64KB Flash, 20KB SRAM)
-- **板载晶振**：主频晶振 8.000MHz，RTC 晶振 32.768kHz
+- **板载晶振**：主频晶振 8.000MHz；部分板卡带 32.768kHz RTC 晶振，当前产品
+  配置只依赖 HSE
 - **板载 LED**：连接至 `PC13`（低电平点亮）
 - **按键**：`NRST` 复位按键
 - **调试接口**：SWD (SWDIO - PA13, SWCLK - PA14, 3.3V, GND)

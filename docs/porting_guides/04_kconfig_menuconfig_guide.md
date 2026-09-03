@@ -28,7 +28,8 @@ python scripts/menuconfig.py
 选择顺序为：
 
 1. `Product Board Selection`：BluePill C8 或正点原子精英 ZE。
-2. `Operating System Selection`：裸机、RT-Thread Nano 或 FreeRTOS。
+2. `Operating System (RTOS) Selection -> RTOS Mode`：裸机、RT-Thread Nano 或
+   FreeRTOS。
 3. 应用、BSP 和所选 RTOS 参数。
 
 BluePill 没有板载用户按键，因此其按键选项不可选。产品选择同时确定 MCU 宏、

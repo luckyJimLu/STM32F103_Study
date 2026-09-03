@@ -2,7 +2,28 @@
 
 > 本文档基于《STM32F1 LWIP 开发手册 V1.2（ENC28J60版本）》整理，系统化总结了在 STM32F103 平台上基于 ENC28J60 网卡进行 LwIP 移植的标准流程。涵盖**无操作系统（裸机 RAW API）**与**带操作系统（UCOS-II / FreeRTOS 架构移植）**两种方案。
 
+> [!IMPORTANT]
+> 本仓库当前没有可构建的 lwIP：`third_party/lwip` 只有体系结构参考头，缺少协议
+> 栈源码、网卡驱动、许可证核对和三系统端口，因此 menuconfig 中没有 lwIP 选项。
+> 下文是基于 lwIP 1.4.1/旧版例程的历史参考，不是当前工程已支持能力。
+
+## 接入当前架构前的准入条件
+
+正式接入时应固定仍受维护的 lwIP 2.1.x 版本并保留许可证，不修改或重命名上游
+`src/core/sys.c`、`lwip/sys.h` 等文件。通过正确的 include 路径和目标级源码清单
+解决同名文件问题，并按以下边界集成：
+
+- 产品相关的 ENC28J60/SPI/EXTI 引脚和能力写入 `product/*`；
+- SPI 与网卡硬件驱动放入 `drivers`/`bsp`，协议栈及许可证放入 `third_party/lwip`；
+- 裸机 RAW API 轮询、RT-Thread `sys_arch`、FreeRTOS `sys_arch` 分别由
+  `platform` 选择，应用层只调用统一网络服务接口；
+- 新 Kconfig 选项必须依赖产品硬件能力和可用系统，CMake 显式列出源码；
+- 为两个产品明确内存预算，完成编译矩阵、静态分析、收发/Ping/DHCP 和长时间
+  压力测试后，才可把 lwIP 标记为可选功能。
+
 ---
+
+## 历史教程内容（不可直接用于当前工程）
 
 ## 一、 移植前准备工作
 
@@ -21,7 +42,7 @@ ENC28J60 是一款带有 SPI 接口的独立以太网控制器，硬件引脚一
 
 ### 2. 软件工程环境准备
 1. **基础工程**：准备具备基本时钟配置、串口打印调试（USART1 115200bps）以及**动态内存管理机制（malloc / free）**的工程（可选配置 USMART 调试组件方便寄存器在线调试）。
-2. **LwIP 源码下载**（推荐 LwIP 1.4.1）：
+2. **历史教程源码**（lwIP 1.4.1，仅用于理解下文例程）：
    - `lwip-1.4.1.zip`：包含协议栈核心源码（`core`、`api`、`include`、`netif`）。
    - `contrib-1.4.1.zip`：包含各平台移植参考范例与模板头文件。
 
@@ -66,11 +87,10 @@ LWIP/
 
 ## 三、 阶段二：源码重命名与工程分组添加
 
-### 1. 规避同名文件冲突（重要避坑点）
-由于 STM32 官方固件库或系统工程中常存在 `sys.c` / `sys.h`，必须将 LwIP 中的文件重命名：
-1. 将 `lwip-1.4.1/src/core/sys.c` 改名为 `lwip_sys.c`。
-2. 将 `lwip-1.4.1/src/include/lwip/sys.h` 改名为 `lwip_sys.h`。
-3. 全局搜索并修改 LwIP 源码中的引用：把 `#include "sys.h"` 改为 `#include "lwip_sys.h"`。
+### 1. 规避同名文件冲突（历史做法说明）
+旧教程建议重命名 `sys.c` / `sys.h` 并全局修改上游源码。当前工程不得采用这种
+做法：保留官方目录结构和 `#include "lwip/sys.h"`，由 CMake 目标的 include 路径
+隔离同名文件。这样才能升级上游版本并审计补丁。
 
 ### 2. Keil / CMake 工程分组配置
 - **`LWIP-NETIF`**：
