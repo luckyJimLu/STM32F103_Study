@@ -61,8 +61,8 @@ flowchart TB
     PLAT --> APP --> BSP --> DRV
     DRV -.依赖.-> PROD
     BSP -.依赖.-> PROD
-    CFG -.生成 autoconf.h / kconfig.cmake.-> LAYERS
-    PROD -.product.cmake.-> BUILD["CMake 目标<br/>MCU 宏 / 启动文件 / 链接脚本"]
+    CFG -.生成 autoconf.h 与 kconfig.cmake.-> LAYERS
+    PROD -.product.cmake.-> BUILD["CMake 目标<br/>MCU 宏、启动文件、链接脚本"]
 ```
 
 层次约束（自上而下单向依赖，禁止反向引用）：

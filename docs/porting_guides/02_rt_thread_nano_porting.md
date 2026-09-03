@@ -34,6 +34,54 @@ tick 不是 1000 Hz 时使用分数累加换算，应用仍收到毫秒时间。
 调用 `App_Process(SystemRuntime_GetTickMs())`，并按 `CONFIG_APP_POLL_INTERVAL_MS`
 休眠。控制台启用时，`rt_hw_console_output()` 转发到 BSP USART1。
 
+## 运行时序
+
+```mermaid
+sequenceDiagram
+    participant HW as 硬件复位
+    participant MAIN as platform/src/main.c
+    participant PORT as system_runtime_rtthread.c
+    participant BSP as bsp/src/bsp.c
+    participant KERN as RT-Thread 内核
+    participant APP as app/src/app_task.c
+
+    HW->>MAIN: Reset_Handler → main()
+    MAIN->>PORT: SystemRuntime_Start()
+    PORT->>PORT: rt_hw_interrupt_disable()
+    PORT->>BSP: rt_hw_board_init() → BSP_Init()
+    BSP->>BSP: HAL_Init → SystemClock_Config<br/>SysTick_Config(HCLK/1000)
+    BSP-->>PORT: HAL_OK
+    PORT->>BSP: SysTick_Config(HCLK / CONFIG_RT_TICK_PER_SECOND)
+    PORT->>KERN: rt_show_version / timer_init / scheduler_init
+    PORT->>APP: App_Init()
+    PORT->>KERN: rt_thread_init(静态栈, 优先级, 时间片)
+    alt 线程创建失败
+        PORT->>BSP: BSP_FatalError("app thread creation failed")
+    end
+    PORT->>KERN: rt_thread_startup → timer_thread_init → idle_init
+    PORT->>KERN: rt_system_scheduler_start()
+    Note over KERN: 调度器不再返回
+    loop 每个 SysTick
+        KERN->>PORT: SysTick_Handler
+        PORT->>PORT: 分数累加 → HAL_IncTick()（毫秒语义）
+        PORT->>KERN: rt_interrupt_enter → rt_tick_increase → rt_interrupt_leave
+    end
+    loop app 线程
+        KERN->>APP: App_Process(SystemRuntime_GetTickMs())
+        APP-->>KERN: 返回（非阻塞）
+        KERN->>KERN: rt_thread_mdelay(CONFIG_APP_POLL_INTERVAL_MS)
+    end
+```
+
+时基要点：
+
+- `BSP_Init()` 先把 SysTick 配成 1 kHz；`rt_hw_board_init()` 随后按
+  `CONFIG_RT_TICK_PER_SECOND` 重新配置。
+- `SysTick_Handler()` 用分数累加把任意内核 tick 频率换算成 HAL 毫秒 tick，应用
+  侧恒以毫秒为单位。
+- 内核 tick 不等于 1000 Hz 时，`SystemRuntime_DelayMs()` 仍经 `rt_thread_mdelay()`
+  换算，无需修改应用。
+
 ## 扩展规则
 
 1. 通用业务优先写成 `App_Process()` 驱动的非阻塞状态机，保持三系统复用。

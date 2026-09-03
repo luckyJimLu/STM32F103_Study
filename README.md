@@ -12,14 +12,29 @@ Kconfig choice 生成互斥宏，不需要修改业务源码。
 
 ## 架构
 
-```text
-product profile + autoconf
-           ↓
-CMSIS → compact HAL → BSP → application
-                         ↖ system runtime port
-                            ├─ bare-metal
-                            ├─ RT-Thread Nano
-                            └─ FreeRTOS
+```mermaid
+flowchart TB
+    subgraph CONFIG["配置注入"]
+        PROF["product profile<br/>product_config.h + product.cmake"]
+        AUTO["autoconf.h<br/>Kconfig CONFIG_* 宏"]
+    end
+
+    subgraph STACK["固件分层"]
+        CMSIS["drivers<br/>CMSIS + 精简 HAL"] --> BSPL["bsp<br/>板级外设"] --> APPL["app<br/>App_Init / App_Process(now_ms)"]
+    end
+
+    subgraph RUNTIME["platform：三选一运行时端口"]
+        BM["bare-metal"]
+        RTT["RT-Thread Nano"]
+        FRT["FreeRTOS"]
+    end
+
+    PROF --> CMSIS
+    AUTO --> CMSIS
+    AUTO --> BSPL
+    AUTO --> APPL
+    APPL --> RUNTIME
+    RUNTIME -.唯一 main / 调度器 / SysTick.-> ELF["STM32F103_Study.elf"]
 ```
 
 - `product/`：产品时钟、容量、引脚、链接参数和六份 defconfig。
@@ -30,8 +45,20 @@ CMSIS → compact HAL → BSP → application
 - `middlewares/rtos/`：保持当前版本的 RT-Thread Nano 和 FreeRTOS。
 - `third_party/`：未完成的参考占位，当前不参与配置或构建。
 
-更完整的设计约束见 [架构说明](docs/architecture.md)，全部文档入口见
-[项目文档导航](docs/README.md)。
+## 文档地图
+
+| 你想做什么 | 入口 |
+| --- | --- |
+| 总览全部文档 | [项目文档导航](docs/README.md) |
+| 理解分层与配置边界 | [固件架构与配置边界](docs/architecture.md) |
+| 按流程开发 | [开发标准作业程序](docs/SOP_development_standard_procedure.md) |
+| 配置与构建 | [Kconfig 指南](docs/porting_guides/04_kconfig_menuconfig_guide.md) · [CMake/Ninja 构建](docs/porting_guides/01_cmake_ninja_setup.md) |
+| 维护 RTOS 端口 | [RT-Thread](docs/porting_guides/02_rt_thread_nano_porting.md) · [FreeRTOS](docs/porting_guides/03_freertos_porting.md) |
+| 新增产品 | [产品板级配置](product/README.md) |
+| 查硬件与教程资料 | [硬件资料](docs/hardware/README.md) · [开发板资料](docs/board_resources/README.md) |
+
+关键流程图（分层依赖、配置到固件、启动流程、时基所有权、构建校验、烧录调试）
+集中在[导航页的流程图索引](docs/README.md#三关键流程图索引)。
 
 ## 配置
 
@@ -99,4 +126,15 @@ REM 烧录当前 menuconfig 激活配置
 scripts\flash.bat configured-debug
 ```
 
-VS Code 原生支持 J-Link GDB Server 调试，按 `F5` 即以 `STM32F103ZE + SWD` 启动。板载 USB 转串口使用 `USART1`（PA9/PA10），串口参数为 `115200 8N1`；启动日志会打印产品、运行系统和实际系统时钟。串口在电脑上的 COM 号由 Windows 动态分配，请在设备管理器或串口工具中选择实际出现的端口。
+VS Code 已配置 J-Link GDB Server 调试：安装 `Cortex-Debug` 与 `C/C++` 插件后，
+在"运行与调试"面板选择 **`Debug ALIENTEK STM32F103ZE (J-Link SWD)`** 并按 `F5`
+即可；该配置的 `preLaunchTask` 会自动先执行 `build\build.bat configured-debug`。
+调试 BluePill 需复制一份启动配置，把 `device` 改为 `STM32F103C8` 并指向对应
+preset 的 ELF。
+
+板载 USB 转串口使用 `USART1`（PA9/PA10），串口参数为 `115200 8N1`；启动日志会
+打印产品、运行系统和实际系统时钟。串口在电脑上的 COM 号由 Windows 动态分配，
+请在设备管理器或串口工具中选择实际出现的端口。
+
+烧录接线、故障排查和 GDB 使用细节见
+[SOP-08](docs/SOP_development_standard_procedure.md#sop-08硬件烧录j-link-在线仿真与排错)。

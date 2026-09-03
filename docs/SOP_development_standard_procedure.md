@@ -177,10 +177,17 @@ CMake 单一注册流程。
 
 ### 开发四步法
 
+```mermaid
+flowchart LR
+    S1["1. 编写源码<br/>bsp/inc/bsp_oled.h<br/>bsp/src/bsp_oled.c"] --> S2["2. 注册 Kconfig<br/>bsp/Kconfig<br/>config BSP_USING_OLED"]
+    S2 --> S3["3. 注册 CMake<br/>bsp/CMakeLists.txt<br/>target_sources(bsp_lib PRIVATE …)"]
+    S3 --> S4["4. 接入初始化<br/>bsp.h 条件包含<br/>BSP_Init 条件调用"]
+    S4 --> S5["5. 验证<br/>目标产品三系统<br/>→ build.bat all"]
+    S5 -->|失败| S1
 ```
-[1. 编写源码]         [2. 注册 Kconfig]       [3. 注册 CMake 源码]      [4. 验证矩阵]
-bsp_oled.c/h  -->   bsp/Kconfig     -->   bsp/CMakeLists.txt  -->  make matrix
-```
+
+> BSP 只读取 `product_config.h` 的资源宏和能力宏，不得直接判断 `STM32F103xB/xE`，
+> 也不得引用 HAL 句柄或 RTOS API 之外的内核细节。
 
 1. **步骤 1：新建头文件与源文件**
    - 在 `bsp/inc/` 创建 `bsp_oled.h`，在 `bsp/src/` 创建 `bsp_oled.c`。
@@ -248,7 +255,10 @@ void App_Process(uint32_t now_ms)
 - 三个端口分别拥有唯一 SysTick 实现，BSP 和应用不得定义或重配 SysTick。
 - 线程/任务参数来自 Kconfig，创建或调度失败必须进入 `BSP_FatalError()`。
 
-详细实现分别见 [RT-Thread 端口](porting_guides/02_rt_thread_nano_porting.md) 和
+三系统的启动分支、SysTick 所有权和失败处理见
+[架构 · 启动流程](architecture.md#启动流程) 与
+[架构 · 时基所有权](architecture.md#时基所有权)；端口实现分别见
+[RT-Thread 端口](porting_guides/02_rt_thread_nano_porting.md) 和
 [FreeRTOS 端口](porting_guides/03_freertos_porting.md)。
 
 ---
@@ -318,7 +328,39 @@ J-Link 与 STM32F103 推荐采用 SWD 4 线制连接（必要时接入复位线�
 > 本工程原生适配 **SEGGER J-Link**。您**完全不需要安装 OpenOCD** 或 ST-Link 驱动！
 > 烧录脚本 `scripts/flash.bat` 直接驱动官方 `JLink.exe`，下载速率更快、校验严谨且无弹窗卡死问题。
 
-### 2. 一键烧录指令
+### 2. 烧录与验证流程
+
+```mermaid
+flowchart TD
+    A["构建固件<br/>build/build.bat &lt;preset&gt;"] --> B["scripts/flash.bat &lt;preset&gt; [device]"]
+    B --> C{"build/out/&lt;preset&gt; 有固件？"}
+    C -->|否| C1["报错并提示先构建"]
+    C -->|是| D{"选择烧录文件"}
+    D -->|"存在 .hex"| D1["HEX（首选）"]
+    D -->|"否则 .bin"| D2["BIN + 0x08000000 加载地址"]
+    D -->|"否则 .elf"| D3["ELF"]
+    D1 --> E{"目标芯片"}
+    D2 --> E
+    D3 --> E
+    E -->|"由 preset 名推断"| E1["atk/elite/ze → STM32F103ZE<br/>bluepill/c8 → STM32F103C8"]
+    E -->|"第二参数或 JLINK_DEVICE"| E2["显式指定"]
+    E -->|"仍未知"| E3["默认 STM32F103ZE"]
+    E1 --> F{"定位 JLink.exe"}
+    E2 --> F
+    E3 --> F
+    F -->|"JLINK_DIR / PATH / 默认安装路径"| G["J-Link Commander<br/>r → h → loadfile → r → g → qc"]
+    F -->|"未找到"| F1["报错并给出下载链接"]
+    G --> H{"退出码 = 0？"}
+    H -->|否| T["排错：供电 / VTref / SWD 接线 / 读保护"]
+    T --> B
+    H -->|是| I["串口验证 115200 8N1<br/>启动日志：产品、系统、主频"]
+    I --> J{"需要源码级调试？"}
+    J -->|是| K["VS Code F5<br/>Cortex-Debug + J-Link"]
+    J -->|否| L(["完成"])
+    K --> L
+```
+
+### 3. 一键烧录指令
 烧录脚本会自动匹配固件（HEX 优先），并根据预设名称自动推断目标芯片型号（如 `STM32F103ZE` 或 `STM32F103C8`）：
 
 ```bash
@@ -339,16 +381,27 @@ scripts\flash.bat configured-debug STM32F103ZE
 make PRESET=atk-elite-baremetal-debug flash
 ```
 
-### 3. VS Code 在线断点仿真
+### 4. VS Code 在线断点仿真
 本工程 `.vscode/launch.json` 已原生配置为 J-Link GDB Server：
 1. 确保安装 VS Code 插件：`Cortex-Debug` 与 `C/C++`。
-2. 确保已编译生成目标 ELF 固件（如点击状态栏 Build 或运行任务 `Build active menuconfig`）。
-3. 切换至 VS Code **运行与调试**面板（`Ctrl+Shift+D`），根据板卡选择配置：
-   - `Debug active config as ALIENTEK F103ZE (J-Link)`
-   - `Debug active config as BluePill C8 (J-Link)`
-4. 按键盘 **`F5`** 启动调试，支持源码级图形化断点、单步执行（F10/F11）、调用栈、变量监视与外设寄存器实时观测。
+2. 切换至 VS Code **运行与调试**面板（`Ctrl+Shift+D`），选择配置
+   **`Debug ALIENTEK STM32F103ZE (J-Link SWD)`**。
+3. 按 **`F5`** 启动调试。`preLaunchTask` 为 `Build active menuconfig`，会先自动
+   执行 `build\build.bat configured-debug`，因此无需手工构建。
+4. 支持源码级图形化断点、单步执行（F10/F11）、调用栈、变量监视与外设寄存器
+   实时观测。
 
-### 4. J-Link 常见排错指南
+> [!NOTE]
+> 仓库当前只提供精英板（STM32F103ZE）一个启动配置，且它固定加载
+> `build/out/configured-debug/STM32F103_Study.elf`。调试 BluePill 时请在
+> `.vscode/launch.json` 中复制一份配置，把 `device` 改为 `STM32F103C8`、
+> `executable` 指向对应 preset 的 ELF；不要直接修改现有配置以免与
+> `configured-debug` 的回退行为冲突。
+
+`.vscode/tasks.json` 另提供 `Build all product/system images`、
+`Kconfig menuconfig`、`Flash active configuration` 和 `Clean all builds` 四个任务。
+
+### 5. J-Link 常见排错指南
 - **错误：Cannot connect to J-Link**：
   - 检查 J-Link USB 数据线是否插牢，驱动是否由 SEGGER 正常识别（设备管理器中显示 `J-Link driver`）。
 - **错误：Cannot connect to target / VTref=0.000V**：

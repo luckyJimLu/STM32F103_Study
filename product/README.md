@@ -33,11 +33,30 @@
 - `linker.ld.in` 由 CMake 使用产品参数生成到各构建目录，不为每个产品复制链接
   脚本。
 
-## 新增产品
+## 新增产品流程
+
+```mermaid
+flowchart TD
+    A["1. 硬件事实核对<br/>数据手册 / 原理图 / 实际晶振 / 器件容量"] --> B["2. product/Kconfig<br/>在互斥 choice 注册产品<br/>派生 MCU 密度宏"]
+    B --> C["3. 创建产品目录四类文件<br/>Kconfig / product.cmake<br/>include/product_config.h<br/>configs/*_defconfig"]
+    C --> D["4. CMakePresets.json<br/>新增 3 系统 × Debug/Release = 6 个 preset"]
+    D --> E["5. BSP 适配<br/>只读产品资源/能力宏<br/>不判断 STM32F103xB/xE"]
+    E --> F["6. 构建 6 个组合<br/>检查 Flash/RAM、入口、SysTick、RTOS 互斥"]
+    F --> G{"全部通过？"}
+    G -->|否| H["回到步骤 3/5 修正"] --> F
+    G -->|是| I["7. 完整矩阵 build.bat all<br/>验证 12 个组合无回归"]
+    I --> J["8. 真实硬件验证<br/>时钟 / LED / 按键 / 串口<br/>/ 烧录 / 复位行为"]
+    J --> K(["产品可用"])
+```
+
+步骤说明：
 
 1. 在 `product/Kconfig` 的互斥 choice 中注册产品，并生成正确的 MCU 密度选项。
 2. 创建上述四类文件，核对数据手册、原理图、实际晶振和器件容量。
 3. BSP 只读取产品资源/能力宏，不直接判断 `STM32F103xB/xE`。
-4. 在 `CMakePresets.json` 增加三系统的 Debug/Release preset，并更新矩阵脚本。
+4. 在 `CMakePresets.json` 增加三系统的 Debug/Release preset
+   （`build_matrix.py` 自动遍历 `buildPresets`，无需改脚本）。
 5. 构建六个组合，检查 Flash/RAM、启动入口、SysTick 和 RTOS 符号互斥。
 6. 在真实硬件验证时钟、LED、按键、串口、烧录和复位行为。
+
+> 顶层 `product/Kconfig` 必须 `source` 新产品目录的 Kconfig，否则菜单不会出现。

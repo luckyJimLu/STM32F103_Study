@@ -35,6 +35,63 @@ cmake --build --preset atk-elite-freertos-debug
 至少构建两个产品的 FreeRTOS Debug/Release，并用完整矩阵检查没有混入
 RT-Thread 符号。
 
+## 当前工程运行时序
+
+```mermaid
+sequenceDiagram
+    participant HW as 硬件复位
+    participant MAIN as platform/src/main.c
+    participant PORT as system_runtime_freertos.c
+    participant BSP as bsp/src/bsp.c
+    participant HOOK as freertos_hooks.c
+    participant KERN as FreeRTOS 内核
+    participant APP as app/src/app_task.c
+
+    HW->>MAIN: Reset_Handler → main()
+    MAIN->>PORT: SystemRuntime_Start()
+    PORT->>PORT: NVIC_SetPriorityGrouping(0)（4 位抢占，无子优先级）
+    PORT->>BSP: BSP_Init()
+    BSP->>BSP: HAL_Init → SystemClock_Config<br/>SysTick_Config(HCLK/1000)
+    BSP-->>PORT: HAL_OK
+    PORT->>APP: App_Init()
+    PORT->>KERN: xTaskCreate(app, CONFIG_FREERTOS_APP_TASK_STACK_WORDS, …)
+    alt 任务创建失败
+        PORT->>BSP: BSP_FatalError("app task creation failed")
+    end
+    PORT->>KERN: vTaskStartScheduler()
+    Note over KERN: 内核按 configTICK_RATE_HZ 重配 SysTick
+    loop 调度器启动前
+        KERN->>HOOK: SysTick_Handler
+        HOOK->>HOOK: HAL_IncTick()
+    end
+    loop 调度器启动后
+        KERN->>HOOK: SysTick_Handler
+        HOOK->>KERN: xPortSysTickHandler()
+        KERN->>HOOK: vApplicationTickHook
+        HOOK->>HOOK: 分数累加 → HAL_IncTick()
+    end
+    loop app 任务
+        KERN->>APP: App_Process(SystemRuntime_GetTickMs())
+        APP-->>KERN: 返回（非阻塞）
+        KERN->>KERN: vTaskDelay(pdMS_TO_TICKS(CONFIG_APP_POLL_INTERVAL_MS))
+    end
+```
+
+时基与失败处理要点：
+
+- `platform` 只保留一个 `main()`；`SysTick_Handler` 由
+  `middlewares/rtos/freertos/freertos_hooks.c` 提供，按调度器状态分流：
+  启动前推进 HAL tick，启动后交给 `xPortSysTickHandler()`。
+- HAL 毫秒 tick 由 `vApplicationTickHook()` 分数累加推进，因此 `configTICK_RATE_HZ`
+  不等于 1000 时应用仍收到毫秒时间。
+- `configUSE_MALLOC_FAILED_HOOK` 与栈溢出检测已开启，
+  `vApplicationMallocFailedHook()` / `vApplicationStackOverflowHook()` 会打印
+  FATAL 日志后关中断停机，不会静默继续运行。
+
+> [!NOTE]
+> 教程中"注释掉 `stm32f10x_it.c` 的 SVC/PendSV/SysTick"或"`delay.c` 里自行实现
+> `SysTick_Handler`"的做法不适用于本工程：SysTick 入口唯一且由上面两个文件拥有。
+
 根目录的 [FreeRTOS SOP 入口](../SOP_freertos_porting_guide.md) 只链接到本页，
 避免维护两份内容。
 
