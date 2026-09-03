@@ -62,9 +62,14 @@ void BSP_USART1_SendString(const char *str)
 int _write(int file, char *ptr, int len)
 {
     (void)file;
+    if (ptr == NULL || len <= 0)
+    {
+        return 0;
+    }
     (void)HAL_UART_Transmit(&s_console_uart,
                             (const uint8_t *)ptr,
-                            (uint16_t)len,
+                            (len <= (int)UINT16_MAX) ? (uint16_t)len
+                                                     : UINT16_MAX,
                             1000);
     return len;
 }

@@ -29,8 +29,7 @@ void SystemRuntime_DelayMs(uint32_t delay_ms)
 void SystemRuntime_Start(void)
 {
     /* Four pre-emption priority bits and no sub-priority bits. */
-    SCB->AIRCR = (0x5FAUL << 16U) |
-                 ((SCB->AIRCR & 0x0000F8FFUL) | (3UL << 8U));
+    NVIC_SetPriorityGrouping(0U);
 
     if (BSP_Init() != HAL_OK)
     {

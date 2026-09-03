@@ -1,8 +1,13 @@
 /* Minimal cJSON implementation stub for STM32 */
 
 #include "cJSON.h"
+#include <limits.h>
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
+
+/* Maximum nesting depth to prevent stack overflow on Cortex-M3 */
+#define CJSON_MAX_NESTING_DEPTH 32
 
 const char *cJSON_Version(void)
 {
@@ -39,6 +44,12 @@ cJSON *cJSON_CreateString(const char *string)
         memset(item, 0, sizeof(cJSON));
         item->type = cJSON_String;
         item->valuestring = (string != NULL) ? strdup(string) : NULL;
+        /* If strdup failed on a non-NULL input, free item and return NULL */
+        if (string != NULL && item->valuestring == NULL)
+        {
+            free(item);
+            return NULL;
+        }
     }
     return item;
 }
@@ -51,7 +62,19 @@ cJSON *cJSON_CreateNumber(double num)
         memset(item, 0, sizeof(cJSON));
         item->type = cJSON_Number;
         item->valuedouble = num;
-        item->valueint = (int)num;
+        /* Saturate double-to-int conversion to avoid undefined behavior */
+        if (num >= (double)INT_MAX)
+        {
+            item->valueint = INT_MAX;
+        }
+        else if (num <= (double)INT_MIN)
+        {
+            item->valueint = INT_MIN;
+        }
+        else
+        {
+            item->valueint = (int)num;
+        }
     }
     return item;
 }
@@ -90,10 +113,21 @@ char *cJSON_PrintUnformatted(const cJSON *item)
 void cJSON_AddItemToObject(cJSON *object, const char *string, cJSON *item)
 {
     if (object == NULL || item == NULL) return;
+
+    /* Free previously allocated key name to prevent memory leak */
+    if (item->string != NULL)
+    {
+        free(item->string);
+    }
     item->string = (string != NULL) ? strdup(string) : NULL;
+
+    /* Ensure item's list pointers are clean before insertion */
+    item->next = NULL;
+
     /* Append to end of child list */
     if (object->child == NULL)
     {
+        item->prev = NULL;
         object->child = item;
     }
     else
@@ -105,13 +139,17 @@ void cJSON_AddItemToObject(cJSON *object, const char *string, cJSON *item)
     }
 }
 
-void cJSON_Delete(cJSON *item)
+/* Internal recursive delete with depth limit to prevent stack overflow */
+static void cJSON_Delete_internal(cJSON *item, int depth)
 {
     cJSON *next;
     while (item != NULL)
     {
         next = item->next;
-        if (item->child)  cJSON_Delete(item->child);
+        if (item->child && depth < CJSON_MAX_NESTING_DEPTH)
+        {
+            cJSON_Delete_internal(item->child, depth + 1);
+        }
         if (item->valuestring) free(item->valuestring);
         if (item->string)      free(item->string);
         free(item);
@@ -119,3 +157,7 @@ void cJSON_Delete(cJSON *item)
     }
 }
 
+void cJSON_Delete(cJSON *item)
+{
+    cJSON_Delete_internal(item, 0);
+}

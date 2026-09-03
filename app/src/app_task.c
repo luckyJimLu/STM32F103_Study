@@ -8,6 +8,9 @@
 #include "logger.h"
 
 #if defined(CONFIG_APP_ENABLE_HEARTBEAT)
+#if CONFIG_APP_LED_BLINK_INTERVAL_MS == 0
+#error "CONFIG_APP_LED_BLINK_INTERVAL_MS must be greater than 0"
+#endif
 static uint32_t s_next_heartbeat_ms;
 
 static bool time_reached(uint32_t now_ms, uint32_t deadline_ms)
@@ -31,6 +34,10 @@ void App_Init(void)
              (unsigned int)CONFIG_APP_LED_BLINK_INTERVAL_MS);
 #endif
 #if defined(CONFIG_APP_ENABLE_BUTTON_TASK)
+    s_key_initialized = false;
+    s_key_stable = KEY_RELEASED;
+    s_key_candidate = KEY_RELEASED;
+    s_key_candidate_since_ms = 0U;
     LOG_INFO("APP", "KEY0 polling enabled period=%ums debounce=%ums",
              (unsigned int)CONFIG_APP_POLL_INTERVAL_MS,
              (unsigned int)CONFIG_APP_KEY_DEBOUNCE_MS);

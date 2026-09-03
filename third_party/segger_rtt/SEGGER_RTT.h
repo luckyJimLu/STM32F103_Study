@@ -12,7 +12,7 @@ typedef struct {
   const char* sName;
   char*       pBuffer;
   unsigned    SizeOfBuffer;
-  unsigned    WrOff;
+  volatile unsigned WrOff;
   volatile unsigned RdOff;
   unsigned    Flags;
 } RING_BUFFER;

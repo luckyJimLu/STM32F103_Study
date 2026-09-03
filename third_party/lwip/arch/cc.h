@@ -21,6 +21,9 @@ typedef uintptr_t mem_ptr_t;
 
 #define LWIP_PLATFORM_DIAG(x)   do { printf x; } while(0)
 #define LWIP_PLATFORM_ASSERT(x) do { printf("Assertion \"%s\" failed at line %d in %s\n", \
-                                            x, __LINE__, __FILE__); } while(0)
+                                            x, __LINE__, __FILE__); \
+                                     __disable_irq(); \
+                                     while(1) {} \
+                                } while(0)
 
 #endif /* __CC_H__ */

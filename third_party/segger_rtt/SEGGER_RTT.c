@@ -16,6 +16,10 @@ void SEGGER_RTT_Init(void) {}
 unsigned SEGGER_RTT_Write(unsigned BufferIndex, const void* pBuffer, unsigned NumBytes)
 {
   (void)BufferIndex;
+  if (pBuffer == NULL || NumBytes == 0U)
+  {
+    return 0;
+  }
   unsigned NumBytesToWrite = NumBytes;
   if (NumBytesToWrite > BUFFER_SIZE_UP) NumBytesToWrite = BUFFER_SIZE_UP;
   memcpy(_acUpBuffer, pBuffer, NumBytesToWrite);
@@ -24,5 +28,9 @@ unsigned SEGGER_RTT_Write(unsigned BufferIndex, const void* pBuffer, unsigned Nu
 
 unsigned SEGGER_RTT_WriteString(unsigned BufferIndex, const char* s)
 {
+  if (s == NULL)
+  {
+    return 0;
+  }
   return SEGGER_RTT_Write(BufferIndex, s, strlen(s));
 }
