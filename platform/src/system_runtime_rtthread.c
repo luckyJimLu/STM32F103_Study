@@ -2,6 +2,7 @@
 
 #include "app_task.h"
 #include "bsp.h"
+#include "logger.h"
 #include "rthw.h"
 #include "rtthread.h"
 
@@ -74,6 +75,9 @@ void SystemRuntime_Start(void)
     rt_show_version();
     rt_system_timer_init();
     rt_system_scheduler_init();
+    LOG_INFO("RUNTIME", "RT-Thread init tick=%uHz app_stack=%u bytes",
+             (unsigned int)CONFIG_RT_TICK_PER_SECOND,
+             (unsigned int)CONFIG_RT_APP_THREAD_STACK_SIZE);
     App_Init();
 
     result = rt_thread_init(&s_app_thread,
@@ -91,6 +95,7 @@ void SystemRuntime_Start(void)
     }
 
     rt_thread_startup(&s_app_thread);
+    LOG_INFO("RUNTIME", "RT-Thread app thread created; starting scheduler");
     rt_system_timer_thread_init();
     rt_thread_idle_init();
     rt_system_scheduler_start();

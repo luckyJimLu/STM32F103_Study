@@ -2,6 +2,7 @@
 
 #include "app_task.h"
 #include "bsp.h"
+#include "logger.h"
 
 void SysTick_Handler(void)
 {
@@ -25,6 +26,7 @@ void SystemRuntime_Start(void)
         BSP_FatalError("board initialization failed");
     }
 
+    LOG_INFO("RUNTIME", "starting bare-metal super loop");
     App_Init();
     for (;;)
     {

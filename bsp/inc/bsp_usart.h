@@ -13,6 +13,7 @@
 
 HAL_StatusTypeDef BSP_USART1_Init(uint32_t baudrate);
 void BSP_USART1_SendChar(char ch);
+void BSP_USART1_SendBuffer(const char *data, uint16_t length);
 void BSP_USART1_SendString(const char *str);
 
 #endif /* __BSP_USART_H */

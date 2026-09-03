@@ -8,9 +8,9 @@
   */
 
 #include "FreeRTOS.h"
-#include "task.h"
+#include "logger.h"
 #include "stm32f1xx_hal.h"
-#include <stdio.h>
+#include "task.h"
 
 extern void xPortSysTickHandler(void);
 static uint32_t s_hal_tick_fraction;
@@ -35,9 +35,7 @@ void SysTick_Handler(void)
  * --------------------------------------------------------------------------- */
 void vApplicationMallocFailedHook(void)
 {
-#if defined(CONFIG_BSP_USING_USART1)
-    printf(">> [FreeRTOS] FATAL: Heap allocation failed!\r\n");
-#endif
+    LOG_FATAL("FREERTOS", "heap allocation failed");
     taskDISABLE_INTERRUPTS();
     for (;;);
 }
@@ -50,8 +48,9 @@ void vApplicationMallocFailedHook(void)
 void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName)
 {
     (void)xTask;
-#if defined(CONFIG_BSP_USING_USART1)
-    printf(">> [FreeRTOS] FATAL: Stack overflow in task [%s]!\r\n", pcTaskName);
+#if defined(CONFIG_LOG_ENABLE)
+    LOG_FATAL("FREERTOS", "stack overflow task=%s",
+              pcTaskName != NULL ? pcTaskName : "unknown");
 #else
     (void)pcTaskName;
 #endif

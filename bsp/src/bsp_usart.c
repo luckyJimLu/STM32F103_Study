@@ -1,5 +1,7 @@
 #include "bsp_usart.h"
 
+#include <string.h>
+
 #include "product_config.h"
 
 static UART_HandleTypeDef s_console_uart;
@@ -35,11 +37,25 @@ void BSP_USART1_SendChar(char ch)
     (void)HAL_UART_Transmit(&s_console_uart, (const uint8_t *)&ch, 1, 1000);
 }
 
+void BSP_USART1_SendBuffer(const char *data, uint16_t length)
+{
+    if ((data != NULL) && (length > 0U))
+    {
+        (void)HAL_UART_Transmit(&s_console_uart,
+                                (const uint8_t *)data,
+                                length,
+                                1000);
+    }
+}
+
 void BSP_USART1_SendString(const char *str)
 {
-    while ((str != NULL) && (*str != '\0'))
+    if (str != NULL)
     {
-        BSP_USART1_SendChar(*str++);
+        const size_t length = strlen(str);
+        BSP_USART1_SendBuffer(str,
+                              length <= UINT16_MAX ? (uint16_t)length
+                                                   : UINT16_MAX);
     }
 }
 

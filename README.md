@@ -43,6 +43,19 @@ python scripts\menuconfig.py
 `configs/*_defconfig`。构建生成的 `autoconf.h` 位于各自构建目录，配置之间
 不会互相覆盖。
 
+### 串口日志
+
+工程内置轻量分级日志模块，统一通过板载 USB 转串口输出：
+
+```text
+[0000000123] [INFO ] [APP    ] KEY0 pressed uptime=123ms
+```
+
+默认日志级别为 INFO，支持 FATAL、ERROR、WARN、INFO、DEBUG。可以在
+`menuconfig -> Logging Configuration` 中调整级别与单行缓冲区大小。启动时会打印
+复位原因、产品及运行系统、主频、Flash/RAM、USART 引脚和波特率；运行期间打印
+任务启动、按键事件和致命异常。LED 心跳属于 DEBUG 日志，默认不会持续刷屏。
+
 ## 构建
 
 Windows 仓库内置 CMake、Ninja 和 GNU Arm Toolchain：

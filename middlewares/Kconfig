@@ -1,3 +1,5 @@
+source "middlewares/logger/Kconfig"
+
 menu "RTOS Kernel Configuration"
 
 source "middlewares/rtos/rt-thread/Kconfig"

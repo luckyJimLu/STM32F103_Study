@@ -13,7 +13,7 @@ config RT_TICK_PER_SECOND
 
 config RT_APP_THREAD_STACK_SIZE
     int "Application thread stack size (bytes)"
-    default 512
+    default 1024
     range 256 4096
 
 config RT_APP_THREAD_PRIORITY

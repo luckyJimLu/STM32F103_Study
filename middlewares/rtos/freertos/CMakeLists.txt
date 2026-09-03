@@ -46,5 +46,6 @@ target_sources(freertos_lib PRIVATE
 # --------------------------------------------------------------------------
 target_link_libraries(freertos_lib PUBLIC
     drivers_lib
+    logger_lib
     project_config
 )

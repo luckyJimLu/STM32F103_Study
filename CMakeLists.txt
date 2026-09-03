@@ -24,9 +24,9 @@ target_compile_definitions(project_config INTERFACE
 )
 
 add_subdirectory(drivers)
+add_subdirectory(middlewares)
 add_subdirectory(bsp)
 add_subdirectory(app)
-add_subdirectory(middlewares)
 add_subdirectory(platform)
 
 set(TARGET_ELF "${PROJECT_NAME}.elf")

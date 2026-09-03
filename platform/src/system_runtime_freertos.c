@@ -3,6 +3,7 @@
 #include "FreeRTOS.h"
 #include "app_task.h"
 #include "bsp.h"
+#include "logger.h"
 #include "task.h"
 
 static void app_task_entry(void *parameter)
@@ -35,6 +36,9 @@ void SystemRuntime_Start(void)
     {
         BSP_FatalError("board initialization failed");
     }
+    LOG_INFO("RUNTIME", "FreeRTOS init tick=%uHz heap=%u bytes",
+             (unsigned int)CONFIG_FREERTOS_TICK_RATE_HZ,
+             (unsigned int)CONFIG_FREERTOS_TOTAL_HEAP_SIZE);
     App_Init();
 
     if (xTaskCreate(app_task_entry,
@@ -47,6 +51,7 @@ void SystemRuntime_Start(void)
         BSP_FatalError("FreeRTOS application task creation failed");
     }
 
+    LOG_INFO("RUNTIME", "FreeRTOS app task created; starting scheduler");
     vTaskStartScheduler();
     BSP_FatalError("FreeRTOS scheduler returned");
 }

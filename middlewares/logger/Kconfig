@@ -1,0 +1,26 @@
+menu "Logging Configuration"
+
+config LOG_ENABLE
+    bool "Enable serial logger"
+    default y
+    depends on BSP_USING_USART1
+    help
+        Enable timestamped, leveled log output through the BSP USART1 console.
+
+config LOG_LEVEL
+    int "Maximum log level (0=FATAL, 1=ERROR, 2=WARN, 3=INFO, 4=DEBUG)"
+    default 3
+    range 0 4
+    depends on LOG_ENABLE
+    help
+        Messages above this level are discarded. INFO is recommended for normal use.
+
+config LOG_BUFFER_SIZE
+    int "Log line buffer size"
+    default 192
+    range 96 512
+    depends on LOG_ENABLE
+    help
+        Maximum formatted log line length, including prefix and line ending.
+
+endmenu

@@ -11,4 +11,4 @@ if(CONFIG_BSP_USING_USART1)
 endif()
 
 target_include_directories(bsp_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc)
-target_link_libraries(bsp_lib PUBLIC drivers_lib project_config)
+target_link_libraries(bsp_lib PUBLIC drivers_lib logger_lib project_config)

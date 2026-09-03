@@ -2,10 +2,10 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 
 #include "app_config.h"
 #include "bsp.h"
+#include "logger.h"
 
 #if defined(CONFIG_APP_ENABLE_HEARTBEAT)
 static uint32_t s_next_heartbeat_ms;
@@ -27,13 +27,18 @@ void App_Init(void)
 {
 #if defined(CONFIG_APP_ENABLE_HEARTBEAT)
     s_next_heartbeat_ms = CONFIG_APP_LED_BLINK_INTERVAL_MS;
+    LOG_INFO("APP", "heartbeat enabled interval=%ums",
+             (unsigned int)CONFIG_APP_LED_BLINK_INTERVAL_MS);
 #endif
-#if defined(CONFIG_BSP_USING_USART1)
-    printf(">> Application %u.%u.%u initialized.\r\n",
-           APP_VERSION_MAJOR,
-           APP_VERSION_MINOR,
-           APP_VERSION_PATCH);
+#if defined(CONFIG_APP_ENABLE_BUTTON_TASK)
+    LOG_INFO("APP", "KEY0 polling enabled period=%ums debounce=%ums",
+             (unsigned int)CONFIG_APP_POLL_INTERVAL_MS,
+             (unsigned int)CONFIG_APP_KEY_DEBOUNCE_MS);
 #endif
+    LOG_INFO("APP", "application version=%u.%u.%u initialized",
+             APP_VERSION_MAJOR,
+             APP_VERSION_MINOR,
+             APP_VERSION_PATCH);
 }
 
 void App_Process(uint32_t now_ms)
@@ -42,6 +47,8 @@ void App_Process(uint32_t now_ms)
     if (time_reached(now_ms, s_next_heartbeat_ms))
     {
         BSP_LED_Toggle();
+        LOG_DEBUG("APP", "heartbeat uptime=%lums",
+                  (unsigned long)now_ms);
         do
         {
             s_next_heartbeat_ms += CONFIG_APP_LED_BLINK_INTERVAL_MS;
@@ -60,6 +67,8 @@ void App_Process(uint32_t now_ms)
         s_key_stable = raw;
         s_key_candidate = raw;
         s_key_candidate_since_ms = now_ms;
+        LOG_DEBUG("KEY", "initial state=%s",
+                  raw == KEY_PRESSED ? "pressed" : "released");
     }
     else if (raw != s_key_candidate)
     {
@@ -73,9 +82,13 @@ void App_Process(uint32_t now_ms)
         s_key_stable = s_key_candidate;
         if (s_key_stable == KEY_PRESSED)
         {
-#if defined(CONFIG_BSP_USING_USART1)
-            printf(">> KEY0 pressed.\r\n");
-#endif
+            LOG_INFO("KEY", "KEY0 pressed uptime=%lums",
+                     (unsigned long)now_ms);
+        }
+        else
+        {
+            LOG_DEBUG("KEY", "KEY0 released uptime=%lums",
+                      (unsigned long)now_ms);
         }
     }
 #endif
