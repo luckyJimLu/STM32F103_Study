@@ -15,7 +15,7 @@ Kconfig、CMake、产品配置和 `platform/` 实现。
 | 改配置、加功能 | [Kconfig/menuconfig 指南](porting_guides/04_kconfig_menuconfig_guide.md) | [开发标准作业程序](SOP_development_standard_procedure.md) |
 | 新增产品或 BSP | [SOP-04 外设与 BSP 规范](SOP_development_standard_procedure.md#sop-04新增外设模块与-bsp-驱动开发规范) | [产品板级配置](../product/README.md) → [CubeMX 对接](porting_guides/05_stm32cubemx_integration_guide.md) |
 | 维护 RTOS 端口 | [RT-Thread Nano 端口](porting_guides/02_rt_thread_nano_porting.md) | [FreeRTOS 端口](porting_guides/03_freertos_porting.md) |
-| 引入第三方组件 | [SOP-06 第三方库引入](SOP_development_standard_procedure.md#sop-06第三方开源库引入与调用) | [lwIP 移植参考](porting_guides/06_lwip_porting_sop.md) |
+| 引入第三方组件 | [SOP-06 第三方库引入](SOP_development_standard_procedure.md#sop-06第三方开源库-lwipcjsonrtt-引入与调用) | [lwIP 移植参考](porting_guides/06_lwip_porting_sop.md) |
 | 查硬件引脚与资料 | [硬件资料库](hardware/README.md) | [开发板资料](board_resources/README.md) |
 
 ---
@@ -59,7 +59,7 @@ Kconfig、CMake、产品配置和 `platform/` 实现。
 | Kconfig → 固件数据流 | menuconfig、defconfig、autoconf 到 ELF/HEX/BIN | [架构 · 配置到固件](architecture.md#从配置到固件的数据流) |
 | 上电启动流程 | 复位向量 → `main` → 三系统分支 → `App_Process` | [架构 · 启动流程](architecture.md#启动流程) |
 | SysTick 与毫秒时基 | 三系统各自独占时基的实现方式 | [架构 · 时基所有权](architecture.md#时基所有权) |
-| 构建与校验流程 | preset → configure → build → 链接后校验 | [01 · 构建流程](porting_guides/01_cmake_ninja_setup.md#构建与校验流程) |
+| 构建与校验流程 | preset → configure → build → 链接后校验 | [01 · 构建流程](porting_guides/01_cmake_ninja_setup.md#5-构建与校验流程) |
 | 配置选择与生成流程 | `.config` / defconfig 如何变成 `autoconf.h` | [04 · 配置流](porting_guides/04_kconfig_menuconfig_guide.md#配置流) |
 | 标准作业主流程 | 从需求到合入的完整路径 | [SOP · 主流程](SOP_development_standard_procedure.md#标准作业主流程) |
 | 新增 BSP 外设四步法 | 源码 → Kconfig → CMake → 验证矩阵 | [SOP-04](SOP_development_standard_procedure.md#sop-04新增外设模块与-bsp-驱动开发规范) |
