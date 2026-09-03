@@ -22,4 +22,15 @@ function(stm32_add_post_build_commands TARGET_NAME)
         COMMAND ${CMAKE_SIZE} --format=berkeley $<TARGET_FILE:${TARGET_NAME}>
         COMMENT ">> Output Memory Footprint (Berkeley Size):"
     )
+
+    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+        COMMAND "${Python3_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/scripts/check_firmware.py"
+                --elf $<TARGET_FILE:${TARGET_NAME}>
+                --size-tool "${CMAKE_SIZE}"
+                --nm-tool "${CMAKE_NM}"
+                --flash-bytes "${PRODUCT_FLASH_BYTES}"
+                --ram-bytes "${PRODUCT_RAM_BYTES}"
+                --system "${SELECTED_RTOS}"
+        COMMENT ">> Verifying memory budget and selected system symbols"
+    )
 endfunction()
