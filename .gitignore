@@ -35,5 +35,4 @@ Thumbs.db
 
 # Large reference documents (keep locally only)
 docs/ref_docs/
-doc/ref_docs/
 *.pdf
