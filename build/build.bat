@@ -21,14 +21,14 @@ exit /b %ERRORLEVEL%
 set "CURRENT_PRESET=%~1"
 echo.
 echo [INFO] Configuring preset: %CURRENT_PRESET%
-"%CMAKE_EXE%" --preset "%CURRENT_PRESET%"
+"%CMAKE_EXE%" -S "%PROJECT_ROOT%" --preset "%CURRENT_PRESET%"
 if errorlevel 1 (
     echo [ERROR] Configure failed for preset: %CURRENT_PRESET%
     exit /b 1
 )
 
 echo [INFO] Building preset: %CURRENT_PRESET%
-"%CMAKE_EXE%" --build --preset "%CURRENT_PRESET%" --parallel
+"%CMAKE_EXE%" --build "%PROJECT_ROOT%\build\out\%CURRENT_PRESET%" --parallel
 if errorlevel 1 (
     echo [ERROR] Build failed for preset: %CURRENT_PRESET%
     exit /b 1
