@@ -46,5 +46,5 @@ target_sources(freertos_lib PRIVATE
 # --------------------------------------------------------------------------
 target_link_libraries(freertos_lib PUBLIC
     drivers_lib
-    bsp_lib
+    project_config
 )

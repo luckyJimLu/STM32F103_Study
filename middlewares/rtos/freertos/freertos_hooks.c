@@ -9,7 +9,24 @@
 
 #include "FreeRTOS.h"
 #include "task.h"
-#include "bsp.h"
+#include "stm32f1xx_hal.h"
+#include <stdio.h>
+
+extern void xPortSysTickHandler(void);
+static uint32_t s_hal_tick_fraction;
+
+/* HAL starts SysTick before the scheduler. Route it safely in both phases. */
+void SysTick_Handler(void)
+{
+    if (xTaskGetSchedulerState() == taskSCHEDULER_NOT_STARTED)
+    {
+        HAL_IncTick();
+    }
+    else
+    {
+        xPortSysTickHandler();
+    }
+}
 
 /* ---------------------------------------------------------------------------
  * vApplicationMallocFailedHook
@@ -18,7 +35,9 @@
  * --------------------------------------------------------------------------- */
 void vApplicationMallocFailedHook(void)
 {
+#if defined(CONFIG_BSP_USING_USART1)
     printf(">> [FreeRTOS] FATAL: Heap allocation failed!\r\n");
+#endif
     taskDISABLE_INTERRUPTS();
     for (;;);
 }
@@ -31,7 +50,11 @@ void vApplicationMallocFailedHook(void)
 void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName)
 {
     (void)xTask;
+#if defined(CONFIG_BSP_USING_USART1)
     printf(">> [FreeRTOS] FATAL: Stack overflow in task [%s]!\r\n", pcTaskName);
+#else
+    (void)pcTaskName;
+#endif
     taskDISABLE_INTERRUPTS();
     for (;;);
 }
@@ -45,8 +68,14 @@ __attribute__((weak)) void vApplicationIdleHook(void)
 }
 
 /* ---------------------------------------------------------------------------
- * vApplicationTickHook  (optional, configUSE_TICK_HOOK = 0 by default)
+ * vApplicationTickHook
  * --------------------------------------------------------------------------- */
 __attribute__((weak)) void vApplicationTickHook(void)
 {
+    s_hal_tick_fraction += 1000U;
+    while (s_hal_tick_fraction >= CONFIG_FREERTOS_TICK_RATE_HZ)
+    {
+        HAL_IncTick();
+        s_hal_tick_fraction -= CONFIG_FREERTOS_TICK_RATE_HZ;
+    }
 }

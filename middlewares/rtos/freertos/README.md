@@ -1,6 +1,7 @@
 # FreeRTOS 模块使用与源码引入说明
 
-本目录用于存放 **FreeRTOS** 内核源码及针对 STM32F103 (Cortex-M3) 的端口文件。
+本目录保存当前工程已有的 **FreeRTOS V10.4.4+ / V202112.00 快照**及
+STM32F103 Cortex-M3 GCC 端口。本次架构改造保持该版本不变。
 
 ## 目录结构规划
 - `include/`: FreeRTOS 核心头文件 (`FreeRTOS.h`, `task.h`, `queue.h`, `semphr.h` 等)

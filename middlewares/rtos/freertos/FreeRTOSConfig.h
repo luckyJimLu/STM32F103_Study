@@ -14,8 +14,14 @@
 #ifndef FREERTOS_CONFIG_H
 #define FREERTOS_CONFIG_H
 
+#include "autoconf.h"
+
 /* STM32F1xx HAL device header (provides SystemCoreClock, __NVIC_PRIO_BITS) */
 #include "stm32f1xx.h"
+
+#if CONFIG_FREERTOS_APP_TASK_PRIORITY >= CONFIG_FREERTOS_MAX_PRIORITIES
+#error "FreeRTOS application task priority must be below configMAX_PRIORITIES"
+#endif
 
 /* ============================================================
  *  Assertion
@@ -36,13 +42,13 @@
  *  Clock / Tick
  * ============================================================ */
 #define configCPU_CLOCK_HZ                      (SystemCoreClock)   /* 72 MHz */
-#define configTICK_RATE_HZ                      ((TickType_t)1000)  /* 1 ms 节拍 */
+#define configTICK_RATE_HZ                      ((TickType_t)CONFIG_FREERTOS_TICK_RATE_HZ)
 
 /* ============================================================
  *  Task settings
  * ============================================================ */
-#define configMAX_PRIORITIES                    (32)
-#define configMINIMAL_STACK_SIZE                ((uint16_t)130)     /* 最小栈（字 word 单位）*/
+#define configMAX_PRIORITIES                    (CONFIG_FREERTOS_MAX_PRIORITIES)
+#define configMINIMAL_STACK_SIZE                ((uint16_t)CONFIG_FREERTOS_MINIMAL_STACK_SIZE)
 #define configMAX_TASK_NAME_LEN                 (16)
 #define configUSE_16_BIT_TICKS                  0   /* 32-bit TickType_t */
 #define configIDLE_SHOULD_YIELD                 1   /* 空闲任务让出 CPU */
@@ -52,9 +58,18 @@
  * ============================================================ */
 #define configUSE_TASK_NOTIFICATIONS            1
 #define configTASK_NOTIFICATION_ARRAY_ENTRIES   1
+#if defined(CONFIG_FREERTOS_USE_MUTEXES)
 #define configUSE_MUTEXES                       1
 #define configUSE_RECURSIVE_MUTEXES             1
+#else
+#define configUSE_MUTEXES                       0
+#define configUSE_RECURSIVE_MUTEXES             0
+#endif
+#if defined(CONFIG_FREERTOS_USE_COUNTING_SEMAPHORES)
 #define configUSE_COUNTING_SEMAPHORES           1
+#else
+#define configUSE_COUNTING_SEMAPHORES           0
+#endif
 #define configQUEUE_REGISTRY_SIZE               8
 
 /* ============================================================
@@ -62,7 +77,7 @@
  * ============================================================ */
 #define configSUPPORT_STATIC_ALLOCATION         0
 #define configSUPPORT_DYNAMIC_ALLOCATION        1
-#define configTOTAL_HEAP_SIZE                   ((size_t)(20 * 1024))  /* 20 KB heap */
+#define configTOTAL_HEAP_SIZE                   ((size_t)CONFIG_FREERTOS_TOTAL_HEAP_SIZE)
 #define configAPPLICATION_ALLOCATED_HEAP        0
 
 /* ============================================================
@@ -75,7 +90,7 @@
  *  Hook functions
  * ============================================================ */
 #define configUSE_IDLE_HOOK                     0
-#define configUSE_TICK_HOOK                     0
+#define configUSE_TICK_HOOK                     1   /* keep the HAL millisecond tick in sync */
 #define configUSE_APPLICATION_TASK_TAG          0
 
 /* ============================================================
@@ -142,6 +157,5 @@
  * ============================================================ */
 #define vPortSVCHandler     SVC_Handler
 #define xPortPendSVHandler  PendSV_Handler
-#define xPortSysTickHandler SysTick_Handler
 
 #endif /* FREERTOS_CONFIG_H */

@@ -6,6 +6,10 @@ build/*
 !build/README.md
 cmake-build-*/
 .cache/
+.config
+cmake/kconfig.cmake
+__pycache__/
+*.py[cod]
 
 # IDE files
 .vscode/*

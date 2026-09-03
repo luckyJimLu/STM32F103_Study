@@ -12,66 +12,88 @@
       }
     },
     {
-      "name": "baremetal-debug",
-      "displayName": "STM32F103 Bare-metal Debug",
-      "description": "Build bare-metal project with debug symbols",
+      "name": "configured-debug",
       "inherits": "base",
+      "displayName": "menuconfig selection (Debug)",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "CHIP_TYPE": "STM32F103xB",
-        "USE_RTOS": "NONE"
+        "PROJECT_CONFIG_FILE": "${sourceDir}/.config"
       }
     },
     {
-      "name": "baremetal-release",
-      "displayName": "STM32F103 Bare-metal Release",
-      "description": "Build bare-metal project optimized for size",
+      "name": "bluepill-baremetal-debug",
       "inherits": "base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
-        "CHIP_TYPE": "STM32F103xB",
-        "USE_RTOS": "NONE"
-      }
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug", "PROJECT_CONFIG_FILE": "${sourceDir}/product/bluepill_f103c8/configs/baremetal_defconfig" }
     },
     {
-      "name": "rtt-debug",
-      "displayName": "STM32F103 RT-Thread Nano Debug",
-      "description": "Build with RT-Thread Nano kernel enabled",
+      "name": "bluepill-baremetal-release",
       "inherits": "base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CHIP_TYPE": "STM32F103xB",
-        "USE_RTOS": "RTTHREAD"
-      }
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release", "PROJECT_CONFIG_FILE": "${sourceDir}/product/bluepill_f103c8/configs/baremetal_defconfig" }
     },
     {
-      "name": "freertos-debug",
-      "displayName": "STM32F103 FreeRTOS Debug",
-      "description": "Build with FreeRTOS kernel enabled",
+      "name": "bluepill-rtthread-debug",
       "inherits": "base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CHIP_TYPE": "STM32F103xB",
-        "USE_RTOS": "FREERTOS"
-      }
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug", "PROJECT_CONFIG_FILE": "${sourceDir}/product/bluepill_f103c8/configs/rtthread_defconfig" }
+    },
+    {
+      "name": "bluepill-rtthread-release",
+      "inherits": "base",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release", "PROJECT_CONFIG_FILE": "${sourceDir}/product/bluepill_f103c8/configs/rtthread_defconfig" }
+    },
+    {
+      "name": "bluepill-freertos-debug",
+      "inherits": "base",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug", "PROJECT_CONFIG_FILE": "${sourceDir}/product/bluepill_f103c8/configs/freertos_defconfig" }
+    },
+    {
+      "name": "bluepill-freertos-release",
+      "inherits": "base",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release", "PROJECT_CONFIG_FILE": "${sourceDir}/product/bluepill_f103c8/configs/freertos_defconfig" }
+    },
+    {
+      "name": "atk-elite-baremetal-debug",
+      "inherits": "base",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug", "PROJECT_CONFIG_FILE": "${sourceDir}/product/atk_elite_f103ze/configs/baremetal_defconfig" }
+    },
+    {
+      "name": "atk-elite-baremetal-release",
+      "inherits": "base",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release", "PROJECT_CONFIG_FILE": "${sourceDir}/product/atk_elite_f103ze/configs/baremetal_defconfig" }
+    },
+    {
+      "name": "atk-elite-rtthread-debug",
+      "inherits": "base",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug", "PROJECT_CONFIG_FILE": "${sourceDir}/product/atk_elite_f103ze/configs/rtthread_defconfig" }
+    },
+    {
+      "name": "atk-elite-rtthread-release",
+      "inherits": "base",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release", "PROJECT_CONFIG_FILE": "${sourceDir}/product/atk_elite_f103ze/configs/rtthread_defconfig" }
+    },
+    {
+      "name": "atk-elite-freertos-debug",
+      "inherits": "base",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug", "PROJECT_CONFIG_FILE": "${sourceDir}/product/atk_elite_f103ze/configs/freertos_defconfig" }
+    },
+    {
+      "name": "atk-elite-freertos-release",
+      "inherits": "base",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release", "PROJECT_CONFIG_FILE": "${sourceDir}/product/atk_elite_f103ze/configs/freertos_defconfig" }
     }
   ],
   "buildPresets": [
-    {
-      "name": "baremetal-debug",
-      "configurePreset": "baremetal-debug"
-    },
-    {
-      "name": "baremetal-release",
-      "configurePreset": "baremetal-release"
-    },
-    {
-      "name": "rtt-debug",
-      "configurePreset": "rtt-debug"
-    },
-    {
-      "name": "freertos-debug",
-      "configurePreset": "freertos-debug"
-    }
+    { "name": "configured-debug", "configurePreset": "configured-debug" },
+    { "name": "bluepill-baremetal-debug", "configurePreset": "bluepill-baremetal-debug" },
+    { "name": "bluepill-baremetal-release", "configurePreset": "bluepill-baremetal-release" },
+    { "name": "bluepill-rtthread-debug", "configurePreset": "bluepill-rtthread-debug" },
+    { "name": "bluepill-rtthread-release", "configurePreset": "bluepill-rtthread-release" },
+    { "name": "bluepill-freertos-debug", "configurePreset": "bluepill-freertos-debug" },
+    { "name": "bluepill-freertos-release", "configurePreset": "bluepill-freertos-release" },
+    { "name": "atk-elite-baremetal-debug", "configurePreset": "atk-elite-baremetal-debug" },
+    { "name": "atk-elite-baremetal-release", "configurePreset": "atk-elite-baremetal-release" },
+    { "name": "atk-elite-rtthread-debug", "configurePreset": "atk-elite-rtthread-debug" },
+    { "name": "atk-elite-rtthread-release", "configurePreset": "atk-elite-rtthread-release" },
+    { "name": "atk-elite-freertos-debug", "configurePreset": "atk-elite-freertos-debug" },
+    { "name": "atk-elite-freertos-release", "configurePreset": "atk-elite-freertos-release" }
   ]
 }

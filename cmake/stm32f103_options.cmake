@@ -1,67 +1,67 @@
-# ==============================================================================
-# stm32f103_options.cmake - Project Configuration Macros & Kconfig Integration
-# ==============================================================================
-
-# 1. Load Kconfig generated options if available
-if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/kconfig.cmake")
-    include("${CMAKE_SOURCE_DIR}/cmake/kconfig.cmake")
-    message(STATUS ">> [Kconfig] Loaded configuration from cmake/kconfig.cmake")
+# Resolve and generate one immutable configuration per CMake build directory.
+if(NOT DEFINED PROJECT_CONFIG_FILE OR PROJECT_CONFIG_FILE STREQUAL "")
+    set(PROJECT_CONFIG_FILE "${CMAKE_SOURCE_DIR}/.config" CACHE FILEPATH
+        "Kconfig file used by this build")
 endif()
 
-# 2. Chip Model selection. An explicit preset/-D value takes precedence over Kconfig.
-if(NOT DEFINED CHIP_TYPE OR CHIP_TYPE STREQUAL "")
-    if(CONFIG_CHIP_STM32F103ZE)
-        set(CHIP_TYPE "STM32F103xE" CACHE STRING "Target STM32F103 family")
-    elseif(CONFIG_CHIP_STM32F103CB)
-        set(CHIP_TYPE "STM32F103xB" CACHE STRING "Target STM32F103 family")
+if(NOT IS_ABSOLUTE "${PROJECT_CONFIG_FILE}")
+    get_filename_component(PROJECT_CONFIG_FILE
+        "${PROJECT_CONFIG_FILE}" ABSOLUTE BASE_DIR "${CMAKE_SOURCE_DIR}")
+endif()
+
+if(NOT EXISTS "${PROJECT_CONFIG_FILE}")
+    if(PROJECT_CONFIG_FILE STREQUAL "${CMAKE_SOURCE_DIR}/.config")
+        set(PROJECT_CONFIG_FILE
+            "${CMAKE_SOURCE_DIR}/product/bluepill_f103c8/configs/baremetal_defconfig")
+        message(STATUS ">> [Kconfig] .config not found; using BluePill bare-metal default")
     else()
-        set(CHIP_TYPE "STM32F103xB" CACHE STRING "Target STM32F103 family")
+        message(FATAL_ERROR "Kconfig file does not exist: ${PROJECT_CONFIG_FILE}")
     endif()
 endif()
 
-# 3. RTOS selection. An explicit preset/-D value takes precedence over Kconfig.
-if(NOT DEFINED USE_RTOS OR USE_RTOS STREQUAL "")
-    if(CONFIG_RTOS_RTTHREAD)
-        set(USE_RTOS "RTTHREAD" CACHE STRING "Select RTOS")
-    elseif(CONFIG_RTOS_FREERTOS)
-        set(USE_RTOS "FREERTOS" CACHE STRING "Select RTOS")
-    else()
-        set(USE_RTOS "NONE" CACHE STRING "Select RTOS")
-    endif()
+set(PROJECT_GENERATED_DIR "${CMAKE_BINARY_DIR}/generated")
+file(MAKE_DIRECTORY "${PROJECT_GENERATED_DIR}")
+execute_process(
+    COMMAND "${Python3_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/scripts/menuconfig.py"
+            --sync --config "${PROJECT_CONFIG_FILE}"
+            --output-dir "${PROJECT_GENERATED_DIR}"
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    RESULT_VARIABLE KCONFIG_RESULT
+    OUTPUT_VARIABLE KCONFIG_OUTPUT
+    ERROR_VARIABLE KCONFIG_ERROR
+)
+if(NOT KCONFIG_RESULT EQUAL 0)
+    message(FATAL_ERROR
+        "Kconfig generation failed for ${PROJECT_CONFIG_FILE}:\n${KCONFIG_OUTPUT}${KCONFIG_ERROR}")
 endif()
+include("${PROJECT_GENERATED_DIR}/kconfig.cmake")
 
-# 4. Third-party options from Kconfig
-if(CONFIG_USING_CJSON)
-    set(ENABLE_CJSON ON CACHE INTERNAL "cJSON")
-endif()
-if(CONFIG_USING_SEGGER_RTT)
-    set(ENABLE_SEGGER_RTT ON CACHE INTERNAL "SEGGER RTT")
-endif()
-
-# Export definitions to compiler
-add_compile_definitions(${CHIP_TYPE})
-add_compile_definitions(USE_HAL_DRIVER)
-
-if(USE_RTOS STREQUAL "RTTHREAD")
-    add_compile_definitions(RT_USING_NANO)
-    add_compile_definitions(CONFIG_USE_RTTHREAD=1)
-    message(STATUS ">> [RTOS Mode] Enabled RT-Thread Nano")
-elseif(USE_RTOS STREQUAL "FREERTOS")
-    add_compile_definitions(CONFIG_USE_FREERTOS=1)
-    message(STATUS ">> [RTOS Mode] Enabled FreeRTOS")
+if(CONFIG_PRODUCT_BLUEPILL_F103C8)
+    include("${CMAKE_SOURCE_DIR}/product/bluepill_f103c8/product.cmake")
+elseif(CONFIG_PRODUCT_ATK_ELITE_F103ZE)
+    include("${CMAKE_SOURCE_DIR}/product/atk_elite_f103ze/product.cmake")
 else()
-    add_compile_definitions(CONFIG_USE_BAREMETAL=1)
-    message(STATUS ">> [RTOS Mode] Enabled Bare-metal")
+    message(FATAL_ERROR "Exactly one supported product must be selected")
 endif()
 
-# Select Linker script and Startup ASM
-if(CHIP_TYPE STREQUAL "STM32F103xB")
-    set(LINKER_SCRIPT "${CMAKE_SOURCE_DIR}/linker/STM32F103C8Tx_FLASH.ld")
-    set(STARTUP_ASM   "${CMAKE_SOURCE_DIR}/drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/gcc/startup_stm32f103xb.s")
-elseif(CHIP_TYPE STREQUAL "STM32F103xE")
-    set(LINKER_SCRIPT "${CMAKE_SOURCE_DIR}/linker/STM32F103ZETx_FLASH.ld")
-    set(STARTUP_ASM   "${CMAKE_SOURCE_DIR}/drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/gcc/startup_stm32f103xe.s")
+if(CONFIG_RTOS_NONE)
+    set(SELECTED_RTOS "BAREMETAL")
+elseif(CONFIG_RTOS_RTTHREAD)
+    set(SELECTED_RTOS "RTTHREAD")
+elseif(CONFIG_RTOS_FREERTOS)
+    set(SELECTED_RTOS "FREERTOS")
+else()
+    message(FATAL_ERROR "Exactly one operating system must be selected")
 endif()
 
-message(STATUS ">> [Chip Type] ${CHIP_TYPE}")
-message(STATUS ">> [Linker Script] ${LINKER_SCRIPT}")
+set(PRODUCT_LINKER_SCRIPT "${PROJECT_GENERATED_DIR}/${PRODUCT_ID}.ld")
+configure_file(
+    "${CMAKE_SOURCE_DIR}/product/linker.ld.in"
+    "${PRODUCT_LINKER_SCRIPT}"
+    @ONLY
+)
+
+message(STATUS ">> [Config] ${PROJECT_CONFIG_FILE}")
+message(STATUS ">> [Product] ${PRODUCT_DISPLAY_NAME}")
+message(STATUS ">> [System] ${SELECTED_RTOS}")
+message(STATUS ">> [Linker] ${PRODUCT_LINKER_SCRIPT}")

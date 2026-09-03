@@ -11,7 +11,7 @@
 #include "stm32f1xx_hal.h"
 #include <stdio.h>
 
-void BSP_USART1_Init(uint32_t baudrate);
+HAL_StatusTypeDef BSP_USART1_Init(uint32_t baudrate);
 void BSP_USART1_SendChar(char ch);
 void BSP_USART1_SendString(const char *str);
 

@@ -9,26 +9,23 @@
 
 HAL_StatusTypeDef HAL_UART_Init(UART_HandleTypeDef *huart)
 {
-  if (huart == NULL || huart->Instance == NULL)
+  if (huart == NULL || huart->Instance == NULL || huart->Init.BaudRate == 0U)
   {
     return HAL_ERROR;
   }
 
-  /* Baud rate calculation for 72MHz (PCLK2 for USART1) */
-  /* Assuming PCLK = 72MHz for USART1 */
-  uint32_t pclk = 72000000U;
+  uint32_t pclk = SystemCoreClock;
   if (huart->Instance == USART2 || huart->Instance == USART3)
   {
-    pclk = 36000000U; /* APB1 clock */
+    pclk = SystemCoreClock / 2U; /* APB1 prescaler is fixed to /2. */
   }
 
-  uint32_t mantissa = pclk / (16U * huart->Init.BaudRate);
-  uint32_t fraction = ((pclk % (16U * huart->Init.BaudRate)) * 16U + (huart->Init.BaudRate / 2U)) / huart->Init.BaudRate;
-
-  huart->Instance->BRR = (mantissa << 4U) | (fraction & 0x0FU);
+  huart->Instance->BRR =
+      (pclk + (huart->Init.BaudRate / 2U)) / huart->Init.BaudRate;
 
   /* Enable USART, TX and RX */
   huart->Instance->CR1 = (1U << USART_CR1_UE_Pos) | (1U << USART_CR1_TE_Pos) | (1U << USART_CR1_RE_Pos);
+  huart->Lock = HAL_UNLOCKED;
 
   return HAL_OK;
 }
@@ -40,6 +37,8 @@ HAL_StatusTypeDef HAL_UART_Transmit(UART_HandleTypeDef *huart, const uint8_t *pD
     return HAL_ERROR;
   }
 
+  __HAL_LOCK(huart);
+
   for (uint16_t i = 0; i < Size; i++)
   {
     uint32_t tickstart = HAL_GetTick();
@@ -47,12 +46,14 @@ HAL_StatusTypeDef HAL_UART_Transmit(UART_HandleTypeDef *huart, const uint8_t *pD
     {
       if (Timeout != 0xFFFFFFFFU && (HAL_GetTick() - tickstart) >= Timeout)
       {
+        __HAL_UNLOCK(huart);
         return HAL_TIMEOUT;
       }
     }
     huart->Instance->DR = (uint16_t)pData[i];
   }
 
+  __HAL_UNLOCK(huart);
   return HAL_OK;
 }
 

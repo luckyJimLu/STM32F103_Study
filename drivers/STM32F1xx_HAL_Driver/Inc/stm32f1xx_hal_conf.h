@@ -8,6 +8,9 @@
 #ifndef __STM32F1xx_HAL_CONF_H
 #define __STM32F1xx_HAL_CONF_H
 
+#include "autoconf.h"
+#include "product_config.h"
+
 #ifdef __cplusplus
  extern "C" {
 #endif
@@ -19,8 +22,8 @@
 #define HAL_CORTEX_MODULE_ENABLED
 #define HAL_FLASH_MODULE_ENABLED
 
-#if !defined  (HSE_VALUE) 
-  #define HSE_VALUE    8000000U /*!< Value of the External oscillator in Hz */
+#if !defined  (HSE_VALUE)
+  #define HSE_VALUE    PRODUCT_HSE_VALUE_HZ
 #endif
 
 #if !defined  (HSI_VALUE)

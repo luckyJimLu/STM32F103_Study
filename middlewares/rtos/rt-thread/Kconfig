@@ -9,18 +9,21 @@ config RT_THREAD_PRIORITY_MAX
 config RT_TICK_PER_SECOND
     int "Ticks Per Second (Hz)"
     default 1000
+    range 100 2000
 
-config RT_USING_HEAP
-    bool "Enable Dynamic Memory Heap"
-    default y
+config RT_APP_THREAD_STACK_SIZE
+    int "Application thread stack size (bytes)"
+    default 512
+    range 256 4096
 
-config RT_USING_FINSH
-    bool "Enable FinSH / msh Shell Console"
-    default y
+config RT_APP_THREAD_PRIORITY
+    int "Application thread priority"
+    default 10
+    range 1 31
 
-config RT_CONSOLEBUF_SIZE
-    int "Console Buffer Size"
-    default 128
-    depends on RT_USING_FINSH
+config RT_APP_THREAD_TIMESLICE
+    int "Application thread timeslice (ticks)"
+    default 20
+    range 1 100
 
 endmenu

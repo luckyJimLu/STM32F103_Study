@@ -1,0 +1,31 @@
+menu "Product Board Selection"
+
+choice
+    prompt "Target product"
+    default PRODUCT_BLUEPILL_F103C8
+
+config PRODUCT_BLUEPILL_F103C8
+    bool "BluePill STM32F103C8T6"
+    help
+        BluePill minimum system board with 64KB Flash and 20KB SRAM.
+
+config PRODUCT_ATK_ELITE_F103ZE
+    bool "ALIENTEK Elite STM32F103ZET6"
+    help
+        ALIENTEK Elite board with 512KB Flash and 64KB SRAM.
+
+endchoice
+
+config MCU_STM32F103XB
+    bool
+    default y if PRODUCT_BLUEPILL_F103C8
+
+config MCU_STM32F103XE
+    bool
+    default y if PRODUCT_ATK_ELITE_F103ZE
+
+config ARCH_ARM_CORTEX_M3
+    bool
+    default y
+
+endmenu

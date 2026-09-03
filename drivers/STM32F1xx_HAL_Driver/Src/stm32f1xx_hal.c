@@ -73,9 +73,3 @@ void HAL_ResumeTick(void)
 {
   uwTickSuspended = 0U;
 }
-
-void SysTick_Handler(void)
-{
-  HAL_IncTick();
-}
-

@@ -7,7 +7,7 @@
 
 #include "stm32f1xx_hal.h"
 
-void SystemClock_Config(void)
+HAL_StatusTypeDef SystemClock_Config(void)
 {
   uint32_t timeout;
 
@@ -20,8 +20,7 @@ void SystemClock_Config(void)
   {
     if (--timeout == 0U)
     {
-      /* HSE startup failed – fall back to HSI at 8MHz */
-      return;
+      return HAL_TIMEOUT;
     }
   }
 
@@ -45,7 +44,7 @@ void SystemClock_Config(void)
   {
     if (--timeout == 0U)
     {
-      return;
+      return HAL_TIMEOUT;
     }
   }
 
@@ -59,10 +58,10 @@ void SystemClock_Config(void)
   {
     if (--timeout == 0U)
     {
-      return;
+      return HAL_TIMEOUT;
     }
   }
 
   SystemCoreClockUpdate();
+  return SystemCoreClock == PRODUCT_SYSCLK_HZ ? HAL_OK : HAL_ERROR;
 }
-

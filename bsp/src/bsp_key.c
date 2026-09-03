@@ -1,32 +1,26 @@
-/**
-  ******************************************************************************
-  * @file    bsp_key.c
-  * @brief   Key/Button Driver Implementation
-  ******************************************************************************
-  */
-
 #include "bsp_key.h"
+
+#include "product_config.h"
+#include "stm32f1xx_hal.h"
+
+#if !PRODUCT_HAS_KEY0
+#error "BSP key driver enabled for a product without KEY0"
+#endif
 
 void BSP_KEY_Init(void)
 {
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-  GPIO_InitStruct.Pin = KEY0_PIN;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL; /* External pull-down on board */
-  HAL_GPIO_Init(KEY0_GPIO_PORT, &GPIO_InitStruct);
+    GPIO_InitTypeDef init = {0};
+    PRODUCT_KEY0_GPIO_CLOCK();
+    init.Pin = PRODUCT_KEY0_PIN;
+    init.Mode = GPIO_MODE_INPUT;
+    init.Pull = PRODUCT_KEY0_PULL;
+    HAL_GPIO_Init(PRODUCT_KEY0_GPIO_PORT, &init);
 }
 
 Key_StateTypeDef BSP_KEY_GetState(void)
 {
-  if (HAL_GPIO_ReadPin(KEY0_GPIO_PORT, KEY0_PIN) == GPIO_PIN_SET)
-  {
-    HAL_Delay(10); /* Debounce */
-    if (HAL_GPIO_ReadPin(KEY0_GPIO_PORT, KEY0_PIN) == GPIO_PIN_SET)
-    {
-      return KEY_PRESSED;
-    }
-  }
-  return KEY_RELEASED;
+    return HAL_GPIO_ReadPin(PRODUCT_KEY0_GPIO_PORT, PRODUCT_KEY0_PIN) ==
+                   PRODUCT_KEY0_ACTIVE_STATE
+               ? KEY_PRESSED
+               : KEY_RELEASED;
 }

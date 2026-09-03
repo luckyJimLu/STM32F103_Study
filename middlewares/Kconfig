@@ -1,7 +1,5 @@
-menu "Middlewares & Third-Party Configuration"
+menu "RTOS Kernel Configuration"
 
 source "middlewares/rtos/rt-thread/Kconfig"
 source "middlewares/rtos/freertos/Kconfig"
-source "middlewares/third_party/Kconfig"
-
 endmenu

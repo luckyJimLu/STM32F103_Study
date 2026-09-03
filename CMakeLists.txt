@@ -1,44 +1,38 @@
 cmake_minimum_required(VERSION 3.20)
 
-# Load toolchain if not specified in command line
 if(NOT CMAKE_TOOLCHAIN_FILE)
-    set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/cmake/arm-none-eabi-gcc.cmake")
+    set(CMAKE_TOOLCHAIN_FILE
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/arm-none-eabi-gcc.cmake")
 endif()
 
-project(STM32F103_Study C CXX ASM)
+project(STM32F103_Study C ASM)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Include modules and options
+find_package(Python3 COMPONENTS Interpreter REQUIRED)
 include(cmake/stm32f103_options.cmake)
 include(cmake/post_build.cmake)
 
-# Global include directory for Kconfig autoconf.h
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/build/generated)
-
-# Define Main Target Executable
-set(TARGET_ELF ${PROJECT_NAME}.elf)
-add_executable(${TARGET_ELF} ${STARTUP_ASM})
-set_target_properties(${TARGET_ELF} PROPERTIES LINKER_LANGUAGE C)
-
-# Set Linker flags for target
-target_link_options(${TARGET_ELF} PRIVATE
-    -T${LINKER_SCRIPT}
+add_library(project_config INTERFACE)
+target_include_directories(project_config INTERFACE
+    "${PROJECT_GENERATED_DIR}"
+    "${PRODUCT_INCLUDE_DIR}"
+    "${CMAKE_SOURCE_DIR}/platform/include"
+)
+target_compile_definitions(project_config INTERFACE
+    ${PRODUCT_MCU_DEFINE}
+    USE_HAL_DRIVER
 )
 
-# Add subdirectories
 add_subdirectory(drivers)
 add_subdirectory(bsp)
-add_subdirectory(middlewares)
-add_subdirectory(third_party)
 add_subdirectory(app)
+add_subdirectory(middlewares)
+add_subdirectory(platform)
 
-# Link all components to target executable
-target_link_libraries(${TARGET_ELF} PRIVATE
-    app_lib
-    bsp_lib
-    middlewares_lib
-    third_party_lib
-    drivers_lib
-)
+set(TARGET_ELF "${PROJECT_NAME}.elf")
+add_executable(${TARGET_ELF} "${PRODUCT_STARTUP_ASM}")
+set_target_properties(${TARGET_ELF} PROPERTIES LINKER_LANGUAGE C)
+target_link_options(${TARGET_ELF} PRIVATE "-T${PRODUCT_LINKER_SCRIPT}")
+target_link_libraries(${TARGET_ELF} PRIVATE platform_lib)
 
-# Generate hex, bin, and display size after build
 stm32_add_post_build_commands(${TARGET_ELF})

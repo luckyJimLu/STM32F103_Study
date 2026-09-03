@@ -4,6 +4,7 @@ menu "FreeRTOS Kernel Settings"
 config FREERTOS_TICK_RATE_HZ
     int "Tick Rate (Hz)"
     default 1000
+    range 100 2000
 
 config FREERTOS_MAX_PRIORITIES
     int "Maximum Task Priorities"
@@ -13,10 +14,23 @@ config FREERTOS_MAX_PRIORITIES
 config FREERTOS_MINIMAL_STACK_SIZE
     int "Minimal Stack Size (words)"
     default 128
+    range 64 1024
 
 config FREERTOS_TOTAL_HEAP_SIZE
     int "Total Heap Size (Bytes)"
-    default 10240
+    default 10240 if PRODUCT_BLUEPILL_F103C8
+    default 32768 if PRODUCT_ATK_ELITE_F103ZE
+    range 4096 49152
+
+config FREERTOS_APP_TASK_STACK_WORDS
+    int "Application task stack size (words)"
+    default 256
+    range 128 2048
+
+config FREERTOS_APP_TASK_PRIORITY
+    int "Application task priority"
+    default 2
+    range 1 31
 
 config FREERTOS_USE_MUTEXES
     bool "Enable Mutexes"

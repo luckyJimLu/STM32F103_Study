@@ -23,7 +23,7 @@
 #define __HAL_RCC_USART2_CLK_ENABLE()  do { RCC->APB1ENR |= (1U << 17); } while(0U)
 #define __HAL_RCC_USART3_CLK_ENABLE()  do { RCC->APB1ENR |= (1U << 18); } while(0U)
 
-void SystemClock_Config(void);
+HAL_StatusTypeDef SystemClock_Config(void);
 
 #ifdef __cplusplus
 }

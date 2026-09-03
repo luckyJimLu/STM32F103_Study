@@ -3,20 +3,35 @@ menu "Application Configuration"
 config APP_ENABLE_HEARTBEAT
     bool "Enable App LED Heartbeat Task"
     default y
+    depends on BSP_USING_LED
     help
         Periodically toggle LED as a heartbeat in application loop.
 
 config APP_LED_BLINK_INTERVAL_MS
     int "Heartbeat Blink Interval (ms)"
     default 500
+    range 50 60000
     depends on APP_ENABLE_HEARTBEAT
     help
         Delay interval for LED toggling in milliseconds.
 
 config APP_ENABLE_BUTTON_TASK
     bool "Enable Key/Button Event Polling"
-    default y
+    default y if PRODUCT_ATK_ELITE_F103ZE
+    default n
+    depends on BSP_USING_KEY
     help
         Poll button state and output messages over serial.
+
+config APP_POLL_INTERVAL_MS
+    int "Application polling period (ms)"
+    default 10
+    range 1 100
+
+config APP_KEY_DEBOUNCE_MS
+    int "Button debounce time (ms)"
+    default 20
+    range 5 200
+    depends on APP_ENABLE_BUTTON_TASK
 
 endmenu
